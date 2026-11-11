@@ -60,6 +60,8 @@
     -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 0 22px rgba(255,138,61,.28)); }
   .brand .sub{ margin-top:5px; font-size:11.5px; color:var(--dim); letter-spacing:.04em; }
+  .brand .credit{ margin-top:6px; font-size:10px; color:var(--steel); letter-spacing:.05em; }
+  .brand .credit b{ color:var(--ember2); font-weight:600; }
   .top-actions{ display:flex; gap:8px; pointer-events:auto; }
   .icon-btn{ display:flex; align-items:center; gap:8px; white-space:nowrap;
     background:var(--surface); color:var(--text);
@@ -176,6 +178,7 @@
     header{ padding:12px 12px; }
     .brand h1{ font-size:24px; }
     .brand .eyebrow, .brand .sub{ display:none; }
+    .brand .credit{ font-size:9px; margin-top:4px; max-width:52vw; line-height:1.45; }
     .icon-btn{ padding:8px 12px; font-size:11.5px; }
     #panel{ top:auto; left:10px; right:10px; bottom:10px; width:auto; max-height:36vh;
       border-radius:14px; padding:10px 12px 6px; }
@@ -197,6 +200,7 @@
     <div class="eyebrow">Little Computer People · Sim</div>
     <h1>Döner Shop</h1>
     <div class="sub">A tiny living imbiss — grill on, door open.</div>
+    <div class="credit">We used <b>Qwen4-Max-Preview</b> on November 11th 2026.</div>
   </div>
   <div class="top-actions">
     <button id="soundBtn" class="icon-btn" title="Toggle sound (M)"><span class="dot"></span><span id="soundLabel">Sound on</span></button>
