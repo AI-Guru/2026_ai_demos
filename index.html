@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0e0a07">
+<title>2026 AI Demos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<style>
+  :root{
+    --bg:#0e0a07; --surface:rgba(24,17,12,.92); --line:rgba(255,138,61,.22);
+    --ember:#ff8a3d; --ember2:#ffb15e; --paprika:#e8452c; --gold:#e8b04b;
+    --text:#f5ecdd; --dim:#b3a08a; --steel:#8b96a8;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:"Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:32px 20px;
+    background-image:radial-gradient(ellipse at 50% 0%, rgba(255,138,61,.08), transparent 60%);
+  }
+  main{ width:100%; max-width:640px; }
+  .eyebrow{ font-size:11px; font-weight:600; letter-spacing:.32em; text-transform:uppercase; color:var(--steel); margin-bottom:8px; }
+  h1{
+    font-size:clamp(34px, 7vw, 52px); font-weight:800; line-height:1.05; margin-bottom:10px;
+    background:linear-gradient(100deg, var(--gold) 5%, var(--ember) 55%, var(--paprika) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  p.sub{ color:var(--dim); font-size:14px; line-height:1.6; margin-bottom:28px; }
+  a.card{
+    display:flex; align-items:center; gap:16px; text-decoration:none; color:var(--text);
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:18px 20px; margin-bottom:12px; transition:border-color .2s, box-shadow .2s, transform .15s;
+  }
+  a.card:hover{ border-color:var(--ember); box-shadow:0 8px 30px rgba(255,138,61,.18); transform:translateY(-2px); }
+  .card .emoji{ font-size:38px; filter:drop-shadow(0 0 14px rgba(255,138,61,.45)); }
+  .card .t{ font-size:18px; font-weight:800; letter-spacing:.02em; }
+  .card .d{ font-size:12.5px; color:var(--dim); margin-top:3px; line-height:1.5; }
+  .card .go{ margin-left:auto; color:var(--ember); font-size:20px; }
+  footer{ margin-top:26px; font-size:11px; color:var(--steel); letter-spacing:.06em; }
+  footer a{ color:var(--ember2); text-decoration:none; }
+  footer a:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">AI-Guru · GitHub Pages</div>
+  <h1>2026 AI Demos</h1>
+  <p class="sub">Small interactive worlds, built end-to-end by AI. Pick one and step in.</p>
+
+  <a class="card" href="doenershop/">
+    <span class="emoji">🥙</span>
+    <span>
+      <span class="t">Döner Shop</span>
+      <span class="d" style="display:block">A living 3D imbiss — rotating skewer, gas grill, clerk and guests. Orbit the camera, run the rush hour.</span>
+    </span>
+    <span class="go">→</span>
+  </a>
+
+  <footer>Source on <a href="https://github.com/AI-Guru/2026_ai_demos">github.com/AI-Guru/2026_ai_demos</a></footer>
+</main>
+</body>
+</html>

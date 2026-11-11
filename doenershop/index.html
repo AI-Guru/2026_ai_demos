@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14100c">
+<title>DÖNER SHOP — Little Computer People</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥙</text></svg>">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#0e0a07;
+    --surface:rgba(24,17,12,.92);
+    --surface2:#2a1e14;
+    --line:rgba(255,138,61,.22);
+    --ember:#ff8a3d;
+    --ember2:#ffb15e;
+    --paprika:#e8452c;
+    --gold:#e8b04b;
+    --herb:#8fbf6a;
+    --cream:#f3e9d2;
+    --steel:#8b96a8;
+    --info:#6fb7ff;
+    --warn:#ffb020;
+    --danger:#ff5a45;
+    --text:#f5ecdd;
+    --dim:#b3a08a;
+    --font:"Bricolage Grotesque", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono:ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; overflow:hidden; background:var(--bg0); }
+  body{ font-family:var(--font); color:var(--text); -webkit-font-smoothing:antialiased; }
+
+  #scene{ position:fixed; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
+  #scene.dragging{ cursor:grabbing; }
+
+  /* ambient overlays */
+  #vignette{ position:fixed; inset:0; pointer-events:none; z-index:2;
+    background:radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(8,4,2,.42) 100%); }
+  #grain{ position:fixed; inset:-50%; pointer-events:none; z-index:3; opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.4s steps(4) infinite; }
+  @keyframes grain{
+    0%{ transform:translate(0,0); } 25%{ transform:translate(-2%,3%); }
+    50%{ transform:translate(3%,-2%); } 75%{ transform:translate(-3%,-3%); } 100%{ transform:translate(2%,2%); } }
+
+  /* ---------- header ---------- */
+  header{ position:fixed; top:0; left:0; right:0; z-index:10;
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:16px 20px; pointer-events:none; gap:12px; }
+  .brand{ pointer-events:none; }
+  .brand .eyebrow{ font-size:10px; font-weight:600; letter-spacing:.32em; text-transform:uppercase;
+    color:var(--steel); margin-bottom:4px; }
+  .brand h1{ font-size:34px; font-weight:800; letter-spacing:.02em; line-height:1;
+    background:linear-gradient(100deg, var(--gold) 5%, var(--ember) 55%, var(--paprika) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 22px rgba(255,138,61,.28)); }
+  .brand .sub{ margin-top:5px; font-size:11.5px; color:var(--dim); letter-spacing:.04em; }
+  .top-actions{ display:flex; gap:8px; pointer-events:auto; }
+  .icon-btn{ display:flex; align-items:center; gap:8px; white-space:nowrap;
+    background:var(--surface); color:var(--text);
+    border:1px solid var(--line); border-radius:999px;
+    padding:9px 15px; font-family:var(--font); font-size:12.5px; font-weight:600; letter-spacing:.03em;
+    cursor:pointer; backdrop-filter:blur(8px);
+    transition:border-color .2s, box-shadow .2s, transform .12s; }
+  .icon-btn:hover{ border-color:var(--ember); box-shadow:0 0 18px rgba(255,138,61,.25); }
+  .icon-btn:active{ transform:scale(.96); }
+  .icon-btn .dot{ width:8px; height:8px; border-radius:50%; background:var(--herb); box-shadow:0 0 8px var(--herb); }
+  .icon-btn.muted .dot{ background:#6d6259; box-shadow:none; }
+  .icon-btn.paused{ border-color:var(--warn); }
+
+  /* ---------- control panel ---------- */
+  #panel{ position:fixed; z-index:10; top:86px; right:14px; bottom:14px; width:262px;
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    backdrop-filter:blur(10px); overflow-y:auto; overscroll-behavior:contain;
+    padding:14px 14px 10px; box-shadow:0 12px 40px rgba(0,0,0,.45); }
+  #panel::-webkit-scrollbar{ width:8px; }
+  #panel::-webkit-scrollbar-track{ background:transparent; margin:8px 0; }
+  #panel::-webkit-scrollbar-thumb{ background:linear-gradient(var(--ember), var(--paprika)); border-radius:8px;
+    border:2px solid rgba(24,17,12,.9); }
+  #panel::-webkit-scrollbar-thumb:hover{ background:var(--ember2); }
+  #panel{ scrollbar-width:thin; scrollbar-color:var(--ember) transparent; }
+  .panel-head{ margin-bottom:10px; }
+  .ph-title{ display:block; font-size:13px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--ember2); }
+  .ph-sub{ display:block; font-size:10.5px; color:var(--dim); margin-top:2px; letter-spacing:.05em; }
+  #panel section{ border-top:1px solid rgba(255,138,61,.12); padding:11px 0 4px; }
+  #panel h3{ font-size:10.5px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--steel); margin-bottom:9px; }
+
+  .ctl{ display:grid; grid-template-columns:1fr 54px; align-items:center; gap:3px 8px; margin-bottom:11px; }
+  .ctl-name{ grid-column:1 / -1; font-size:12px; font-weight:600; color:var(--text); letter-spacing:.02em; }
+  .ctl output{ font-family:var(--mono); font-size:11px; color:var(--ember2); text-align:right; }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:6px;
+    background:linear-gradient(90deg, var(--ember) var(--val,50%), #3a2c20 var(--val,50%));
+    outline:none; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--cream); border:3px solid var(--ember); box-shadow:0 0 0 0 rgba(255,138,61,.35);
+    transition:box-shadow .2s, transform .15s; }
+  input[type=range]::-webkit-slider-thumb:hover{ transform:scale(1.15); box-shadow:0 0 0 6px rgba(255,138,61,.18); }
+  input[type=range]::-moz-range-thumb{ width:14px; height:14px; border-radius:50%;
+    background:var(--cream); border:3px solid var(--ember); cursor:pointer; }
+  input[type=range]::-moz-range-track{ height:6px; border-radius:6px; background:#3a2c20; }
+  input[type=range]::-moz-range-progress{ height:6px; border-radius:6px; background:var(--ember); }
+
+  select{ width:100%; background:var(--surface2); color:var(--text); border:1px solid var(--line);
+    border-radius:9px; padding:7px 9px; font-family:var(--font); font-size:12.5px; font-weight:600;
+    cursor:pointer; outline:none; margin-bottom:11px; }
+  select:hover{ border-color:var(--ember); }
+
+  .switch-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; cursor:pointer;
+    font-size:12px; font-weight:600; }
+  .switch-row input{ position:absolute; opacity:0; pointer-events:none; }
+  .switch-row .track{ width:36px; height:20px; border-radius:999px; background:#3a2c20; position:relative;
+    transition:background .2s; flex:none; border:1px solid rgba(255,138,61,.15); }
+  .switch-row .track::after{ content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%;
+    background:var(--dim); transition:left .2s, background .2s; }
+  .switch-row input:checked + .track{ background:linear-gradient(90deg, var(--ember), var(--paprika)); }
+  .switch-row input:checked + .track::after{ left:18px; background:var(--cream); }
+
+  .btn{ width:100%; border:none; border-radius:10px; padding:9px 12px; margin-bottom:8px;
+    font-family:var(--font); font-size:12.5px; font-weight:700; letter-spacing:.03em; cursor:pointer;
+    transition:transform .12s, box-shadow .2s, filter .2s; }
+  .btn:active{ transform:scale(.97); }
+  .btn.primary{ background:linear-gradient(100deg, var(--ember), var(--paprika)); color:#1c0d05;
+    box-shadow:0 4px 18px rgba(232,69,44,.3); }
+  .btn.primary:hover{ filter:brightness(1.1); box-shadow:0 4px 24px rgba(255,138,61,.45); }
+  .btn.ghost{ background:var(--surface2); color:var(--text); border:1px solid var(--line); }
+  .btn.ghost:hover{ border-color:var(--ember); }
+  .panel-note{ font-size:10px; color:var(--dim); line-height:1.6; padding:8px 0 4px; letter-spacing:.03em; }
+  .panel-note b{ color:var(--steel); font-weight:600; }
+
+  /* ---------- stats + event feed ---------- */
+  #feed{ position:fixed; z-index:10; left:18px; bottom:16px; max-width:min(430px, calc(100vw - 320px)); pointer-events:none; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .chip{ display:inline-flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--line);
+    border-radius:999px; padding:5px 11px; font-size:11.5px; font-weight:600; backdrop-filter:blur(8px); }
+  .chip b{ font-family:var(--mono); font-weight:600; color:var(--ember2); }
+  .chip.meat b{ color:var(--gold); }
+  .chip.time b{ color:var(--info); }
+  #log{ list-style:none; display:flex; flex-direction:column-reverse; gap:4px; }
+  #log li{ background:rgba(20,14,10,.82); border-left:3px solid var(--ember); border-radius:6px;
+    padding:5px 10px; font-size:11.5px; color:var(--text); backdrop-filter:blur(6px);
+    animation:logIn .35s ease; max-width:100%; }
+  #log li.old{ opacity:.55; border-left-color:#5a4632; }
+  #log li .t{ font-family:var(--mono); font-size:10px; color:var(--steel); margin-right:7px; }
+  @keyframes logIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+
+  /* ---------- hint / loading / fallback ---------- */
+  #hint{ position:fixed; z-index:10; bottom:18px; left:50%; transform:translateX(-50%);
+    background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:8px 18px;
+    font-size:11.5px; color:var(--dim); letter-spacing:.04em; pointer-events:none; backdrop-filter:blur(8px);
+    transition:opacity 1s; white-space:nowrap; }
+  #hint.gone{ opacity:0; }
+  #loading{ position:fixed; inset:0; z-index:50; background:var(--bg0);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    transition:opacity .7s; }
+  #loading.gone{ opacity:0; pointer-events:none; }
+  #loading .kebab{ font-size:64px; animation:spin 2.4s linear infinite; filter:drop-shadow(0 0 30px rgba(255,138,61,.5)); }
+  @keyframes spin{ from{ transform:rotateY(0deg); } to{ transform:rotateY(360deg); } }
+  #loading .lt{ font-size:13px; letter-spacing:.28em; text-transform:uppercase; color:var(--dim); }
+  #loading .bar{ width:180px; height:3px; border-radius:3px; background:#2a1e14; overflow:hidden; }
+  #loading .bar i{ display:block; height:100%; width:40%; border-radius:3px;
+    background:linear-gradient(90deg, var(--ember), var(--paprika)); animation:load 1.2s ease-in-out infinite; }
+  @keyframes load{ 0%{ transform:translateX(-100%); } 100%{ transform:translateX(460%); } }
+  #fallback{ position:fixed; inset:0; z-index:60; background:var(--bg0); display:none;
+    align-items:center; justify-content:center; text-align:center; padding:30px; }
+  #fallback .box{ max-width:420px; }
+  #fallback h2{ color:var(--ember); margin-bottom:10px; }
+  #fallback p{ color:var(--dim); font-size:14px; line-height:1.6; }
+
+  /* ---------- small screens: panel stays visible as a bottom dock ---------- */
+  @media (max-width:760px){
+    header{ padding:12px 12px; }
+    .brand h1{ font-size:24px; }
+    .brand .eyebrow, .brand .sub{ display:none; }
+    .icon-btn{ padding:8px 12px; font-size:11.5px; }
+    #panel{ top:auto; left:10px; right:10px; bottom:10px; width:auto; max-height:36vh;
+      border-radius:14px; padding:10px 12px 6px; }
+    #feed{ left:12px; bottom:calc(36vh + 22px); max-width:calc(100vw - 24px); }
+    .chip{ font-size:10px; padding:4px 8px; gap:4px; }
+    #log li{ font-size:10.5px; padding:4px 8px; }
+    #log li:nth-child(n+3){ display:none; }
+    #hint{ display:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div id="vignette"></div>
+<div id="grain"></div>
+
+<header>
+  <div class="brand">
+    <div class="eyebrow">Little Computer People · Sim</div>
+    <h1>Döner Shop</h1>
+    <div class="sub">A tiny living imbiss — grill on, door open.</div>
+  </div>
+  <div class="top-actions">
+    <button id="soundBtn" class="icon-btn" title="Toggle sound (M)"><span class="dot"></span><span id="soundLabel">Sound on</span></button>
+    <button id="pauseBtn" class="icon-btn" title="Pause / resume (Space)"><span id="pauseIcon">⏸</span><span id="pauseLabel">Pause</span></button>
+  </div>
+</header>
+
+<aside id="panel">
+  <div class="panel-head">
+    <span class="ph-title">Shop Controls</span>
+    <span class="ph-sub">live · everything applies instantly</span>
+  </div>
+
+  <section>
+    <h3>🔥 Simulation</h3>
+    <label class="ctl"><span class="ctl-name">Sim speed</span>
+      <input type="range" id="cSpeed" min="0" max="3" step="0.05" value="1"><output id="oSpeed">1.00×</output></label>
+    <label class="ctl"><span class="ctl-name">Skewer rotation</span>
+      <input type="range" id="cSkewer" min="0" max="3" step="0.05" value="1"><output id="oSkewer">1.00×</output></label>
+    <label class="ctl"><span class="ctl-name">Grill heat</span>
+      <input type="range" id="cHeat" min="0" max="1.5" step="0.05" value="1"><output id="oHeat">100%</output></label>
+    <label class="ctl"><span class="ctl-name">Customer flow</span>
+      <input type="range" id="cCrowd" min="0" max="3" step="0.05" value="1"><output id="oCrowd">1.00×</output></label>
+  </section>
+
+  <section>
+    <h3>🌆 Atmosphere</h3>
+    <label class="ctl"><span class="ctl-name">Time of day</span></label>
+    <select id="cTod">
+      <option value="day">☀️ Afternoon</option>
+      <option value="evening" selected>🌇 Evening rush</option>
+      <option value="night">🌙 Late night</option>
+    </select>
+    <label class="ctl"><span class="ctl-name">Steam &amp; smoke</span>
+      <input type="range" id="cSteam" min="0" max="2" step="0.05" value="1"><output id="oSteam">1.00×</output></label>
+    <label class="ctl"><span class="ctl-name">Neon glow (bloom)</span>
+      <input type="range" id="cGlow" min="0" max="1.5" step="0.05" value="0.65"><output id="oGlow">0.65</output></label>
+  </section>
+
+  <section>
+    <h3>🎥 Camera &amp; view</h3>
+    <label class="switch-row"><span>Auto-orbit</span><input type="checkbox" id="cOrbit" checked><i class="track"></i></label>
+    <label class="switch-row"><span>Speech bubbles &amp; names</span><input type="checkbox" id="cLabels" checked><i class="track"></i></label>
+    <button class="btn ghost" id="bView">↺ Reset camera</button>
+  </section>
+
+  <section>
+    <h3>⚡ Actions</h3>
+    <button class="btn primary" id="bRush">🏃 Rush hour!</button>
+    <button class="btn ghost" id="bReset">🧹 Reset shop</button>
+    <button class="btn ghost" id="bShot">📸 Save screenshot</button>
+  </section>
+
+  <div class="panel-note">
+    <b>Drag</b> to orbit · <b>scroll</b> to zoom · <b>Space</b> pause · <b>M</b> sound · <b>R</b> reset view
+  </div>
+</aside>
+
+<div id="feed">
+  <div class="chips">
+    <span class="chip">🥙 Served <b id="sServed">0</b></span>
+    <span class="chip">🧍 Guests <b id="sGuests">0</b></span>
+    <span class="chip meat">🍖 Skewer <b id="sMeat">100%</b></span>
+    <span class="chip time">🕒 <b id="sTime">18:24</b></span>
+  </div>
+  <ul id="log"></ul>
+</div>
+
+<div id="hint">🖱 Drag to orbit · Scroll to zoom · Watch the little people live</div>
+
+<div id="loading">
+  <div class="kebab">🥙</div>
+  <div class="lt">Grill warming up</div>
+  <div class="bar"><i></i></div>
+</div>
+
+<div id="fallback"><div class="box">
+  <h2>Grill won't light 🔥</h2>
+  <p>This simulation needs WebGL. Please open it in a modern browser (Chrome, Edge, Firefox, Safari) with hardware acceleration enabled.</p>
+</div></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ============================== config & state ============================== */
+const CFG = {
+  speed: 1, skewer: 1, heat: 1, crowd: 1, steam: 1, glow: 0.65,
+  tod: 'evening', autoOrbit: true, labels: true, paused: false, sound: true,
+};
+const $ = id => document.getElementById(id);
+const canvas = $('scene');
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+
+let served = 0, meatLevel = 1, simMinutes = 18 * 60 + 24;
+let meatPop = 0;
+
+/* ============================== renderer / scene ============================== */
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+} catch (e) {
+  $('fallback').style.display = 'flex';
+  $('loading').classList.add('gone');
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#191016');
+scene.fog = new THREE.FogExp2('#191016', 0.016);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 120);
+const HOME_POS = V3(7.4, 5.0, 9.2), HOME_TGT = V3(-0.3, 1.05, -0.9);
+camera.position.copy(HOME_POS);
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.copy(HOME_TGT);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.enablePan = false;
+controls.minDistance = 4.2;
+controls.maxDistance = 24;
+controls.minPolarAngle = 0.18;
+controls.maxPolarAngle = 1.44;
+controls.minAzimuthAngle = -0.28;
+controls.maxAzimuthAngle = 1.32;
+canvas.addEventListener('pointerdown', () => canvas.classList.add('dragging'));
+window.addEventListener('pointerup', () => canvas.classList.remove('dragging'));
+
+/* baked environment for PBR reflections (generated once, never recomputed) */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+pmrem.dispose();
+
+/* post-processing: gentle bloom for the heater rods, neon and lamps */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), CFG.glow, 0.4, 0.85);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ============================== lights ============================== */
+const hemi = new THREE.HemisphereLight('#ffd9b0', '#3a2a20', 0.32);
+scene.add(hemi);
+
+const key = new THREE.SpotLight('#ffd9ae', 55, 34, 0.78, 0.6, 1.6);
+key.position.set(4.2, 7.2, 5.2);
+key.target.position.set(-0.5, 0.6, -2.2);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.near = 2;
+key.shadow.camera.far = 26;
+key.shadow.bias = -0.0006;
+scene.add(key, key.target);
+
+const windowLight = new THREE.DirectionalLight('#ff9a6a', 0.8);
+windowLight.position.set(-9, 4.6, -0.8);
+windowLight.target.position.set(1, 0.8, 0);
+scene.add(windowLight, windowLight.target);
+
+const grillLight = new THREE.PointLight('#ff7733', 8, 8, 2);
+grillLight.position.set(-3.2, 1.85, -3.6);
+scene.add(grillLight);
+
+const fridgeLight = new THREE.PointLight('#cfe8ff', 1.6, 3.4, 2);
+fridgeLight.position.set(5.25, 1.5, -4.1);
+scene.add(fridgeLight);
+
+const lampLights = [];
+const lampBulbMats = [];
+
+/* ============================== helpers ============================== */
+const matCache = new Map();
+function mat(color, roughness = 0.8, metalness = 0, extra = {}) {
+  const k = color + '|' + roughness + '|' + metalness + '|' + JSON.stringify(extra);
+  if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({
+    color, roughness, metalness, envMapIntensity: metalness > 0.5 ? 0.6 : 0.28, ...extra,
+  }));
+  return matCache.get(k);
+}
+function box(w, h, d, material, x = 0, y = 0, z = 0, cast = true, recv = true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+  m.position.set(x, y, z); m.castShadow = cast; m.receiveShadow = recv;
+  return m;
+}
+function cyl(rt, rb, h, material, x = 0, y = 0, z = 0, seg = 18, cast = true) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), material);
+  m.position.set(x, y, z); m.castShadow = cast; m.receiveShadow = true;
+  return m;
+}
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  return t;
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function lerpAngle(a, b, t) {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + d * t;
+}
+/* ============================== textures ============================== */
+const floorTex = canvasTex(512, 512, (ctx, w, h) => {
+  const n = 8, s = w / n;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    ctx.fillStyle = (i + j) % 2 ? '#b8563f' : '#efe3cd';
+    ctx.fillRect(i * s, j * s, s, s);
+    ctx.fillStyle = 'rgba(0,0,0,.06)';
+    for (let k = 0; k < 26; k++) ctx.fillRect(i * s + Math.random() * s, j * s + Math.random() * s, 2, 2);
+  }
+  ctx.strokeStyle = 'rgba(40,25,18,.55)'; ctx.lineWidth = 3;
+  for (let i = 0; i <= n; i++) {
+    ctx.beginPath(); ctx.moveTo(i * s, 0); ctx.lineTo(i * s, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * s); ctx.lineTo(w, i * s); ctx.stroke();
+  }
+});
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+floorTex.repeat.set(3, 2.5);
+
+const wallTileTex = canvasTex(512, 256, (ctx, w, h) => {
+  ctx.fillStyle = '#f2ece0'; ctx.fillRect(0, 0, w, h);
+  const tw = 64, th = 32;
+  ctx.strokeStyle = 'rgba(120,105,85,.5)'; ctx.lineWidth = 2;
+  for (let y = 0; y < h; y += th) {
+    const off = (y / th) % 2 ? tw / 2 : 0;
+    for (let x = -tw; x < w + tw; x += tw) {
+      ctx.strokeRect(x + off, y, tw, th);
+      ctx.fillStyle = 'rgba(255,255,255,.35)';
+      ctx.fillRect(x + off + 3, y + 3, tw - 6, 4);
+    }
+  }
+});
+wallTileTex.wrapS = wallTileTex.wrapT = THREE.RepeatWrapping;
+
+const meatTex = canvasTex(256, 512, (ctx, w, h) => {
+  ctx.fillStyle = '#8a4a26'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * w;
+    ctx.strokeStyle = `rgba(${40 + Math.random() * 40 | 0},${18 + Math.random() * 20 | 0},10,${rand(.15, .5)})`;
+    ctx.lineWidth = rand(2, 9);
+    ctx.beginPath(); ctx.moveTo(x, 0);
+    ctx.bezierCurveTo(x + rand(-14, 14), h * .33, x + rand(-14, 14), h * .66, x + rand(-10, 10), h);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 60; i++) {
+    ctx.fillStyle = `rgba(217,160,102,${rand(.1, .4)})`;
+    ctx.fillRect(Math.random() * w, Math.random() * h, rand(2, 5), rand(10, 42));
+  }
+  for (let i = 0; i < 130; i++) {
+    ctx.fillStyle = `rgba(25,12,6,${rand(.2, .6)})`;
+    ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, rand(1, 4), 0, 7); ctx.fill();
+  }
+});
+meatTex.wrapS = meatTex.wrapT = THREE.RepeatWrapping;
+
+const menuTex = canvasTex(1024, 560, (ctx, w, h) => {
+  ctx.fillStyle = '#1d1712'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#e8b04b'; ctx.lineWidth = 8; ctx.strokeRect(14, 14, w - 28, h - 28);
+  ctx.fillStyle = '#e8b04b'; ctx.textAlign = 'center';
+  ctx.font = '800 64px "Bricolage Grotesque", sans-serif';
+  ctx.fillText('· SPEISEKARTE ·', w / 2, 96);
+  const items = [
+    ['Döner im Fladenbrot', '7,50 €'], ['Dürüm (Yufka)', '8,00 €'],
+    ['Pommes rot / weiß', '3,50 €'], ['Ayran', '2,00 €'], ['Lahmacun', '6,50 €'],
+  ];
+  ctx.font = '600 40px "Bricolage Grotesque", sans-serif';
+  items.forEach((it, i) => {
+    const y = 176 + i * 62;
+    ctx.textAlign = 'left'; ctx.fillStyle = '#f3e9d2'; ctx.fillText(it[0], 62, y);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#ff8a3d'; ctx.fillText(it[1], w - 62, y);
+    ctx.strokeStyle = 'rgba(243,233,210,.25)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(62, y + 14); ctx.lineTo(w - 62, y + 14); ctx.stroke();
+  });
+  ctx.textAlign = 'center'; ctx.fillStyle = '#8fbf6a';
+  ctx.font = '600 30px "Bricolage Grotesque", sans-serif';
+  ctx.fillText('🌱 Alles auch vegetarisch · alles mit viel Liebe', w / 2, h - 46);
+});
+
+const neonTex = canvasTex(1024, 320, (ctx, w, h) => {
+  ctx.clearRect(0, 0, w, h);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '800 190px "Bricolage Grotesque", sans-serif';
+  ctx.shadowColor = '#ff5a3c'; ctx.shadowBlur = 46;
+  ctx.fillStyle = '#ff6a45'; ctx.fillText('DÖNER', w / 2, h / 2 + 10);
+  ctx.shadowBlur = 18; ctx.fillStyle = '#ffd9c8';
+  ctx.fillText('DÖNER', w / 2, h / 2 + 10);
+});
+
+const posterTex = canvasTex(256, 340, (ctx, w, h) => {
+  ctx.fillStyle = '#c23b2e'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#f3e9d2'; ctx.lineWidth = 8; ctx.strokeRect(10, 10, w - 20, h - 20);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#f3e9d2';
+  ctx.font = '110px serif'; ctx.fillText('🥙', w / 2, 150);
+  ctx.font = '800 44px "Bricolage Grotesque", sans-serif';
+  ctx.fillText('LECKER!', w / 2, 230);
+  ctx.font = '600 22px "Bricolage Grotesque", sans-serif';
+  ctx.fillText('seit 1998', w / 2, 272);
+});
+
+function skyTex(kind) {
+  return canvasTex(256, 256, (ctx, w, h) => {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    if (kind === 'day') { g.addColorStop(0, '#8ec8e8'); g.addColorStop(1, '#dceef7'); }
+    else if (kind === 'evening') { g.addColorStop(0, '#5a3a6a'); g.addColorStop(.55, '#e8703d'); g.addColorStop(1, '#ffc46b'); }
+    else { g.addColorStop(0, '#0a1226'); g.addColorStop(1, '#1d2f4d'); }
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    if (kind === 'evening') {
+      ctx.fillStyle = '#ffe9b0'; ctx.shadowColor = '#ffcf7d'; ctx.shadowBlur = 30;
+      ctx.beginPath(); ctx.arc(w * .62, h * .78, 22, 0, 7); ctx.fill();
+    }
+    if (kind === 'night') {
+      ctx.fillStyle = '#f3e9d2'; ctx.shadowColor = '#f3e9d2'; ctx.shadowBlur = 22;
+      ctx.beginPath(); ctx.arc(w * .68, h * .28, 16, 0, 7); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,.85)';
+      for (let i = 0; i < 40; i++) ctx.fillRect(Math.random() * w, Math.random() * h * .7, 1.6, 1.6);
+    }
+    /* distant rooftops */
+    ctx.fillStyle = kind === 'night' ? '#060a14' : 'rgba(30,22,30,.75)';
+    for (let x = 0; x < w; x += rand(24, 44)) {
+      const bh = rand(20, 58); ctx.fillRect(x, h - bh, rand(20, 40), bh);
+    }
+  });
+}
+const skyTextures = { day: skyTex('day'), evening: skyTex('evening'), night: skyTex('night') };
+
+const softTex = canvasTex(128, 128, (ctx, w, h) => {
+  const g = ctx.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(.45, 'rgba(255,255,255,.45)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+});
+
+/* ============================== the room (diorama) ============================== */
+const room = new THREE.Group();
+scene.add(room);
+
+const steel = mat('#9aa2ab', 0.32, 0.85);
+const darkSteel = mat('#4c5158', 0.45, 0.8);
+const wood = mat('#8a5a33', 0.72, 0);
+const woodDark = mat('#5a3a20', 0.8, 0);
+const creamMat = mat('#f3e9d2', 0.85, 0);
+
+/* plinth + floor */
+room.add(box(12.7, 0.36, 10.7, mat('#241a14', 0.9), 0, -0.18, 0, false, true));
+room.add(box(12.9, 0.1, 10.9, mat('#15100b', 0.9), 0, -0.41, 0, false, false));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.8, metalness: 0, specularIntensity: 0.12 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = 0.001; floor.receiveShadow = true;
+room.add(floor);
+
+/* walls: back + left only, so the diorama always reads from the open corner */
+const plaster = mat('#f0dfbe', 0.9);
+const wainscotMat = new THREE.MeshStandardMaterial({ map: wallTileTex, roughness: 0.35 });
+function wallSeg(w, h, x, y, z, ry = 0) {
+  const g = new THREE.Group();
+  const upper = box(w, h, 0.25, plaster, 0, 0, 0, false, true);
+  g.add(upper);
+  g.position.set(x, y, z); g.rotation.y = ry;
+  room.add(g);
+  return g;
+}
+/* back wall */
+wallSeg(12.5, 4, 0, 2, -5.125);
+const backWains = box(12.5, 1.3, 0.06, wainscotMat, 0, 0.65, -4.97, false, true);
+room.add(backWains);
+/* left wall segments around window (z -2.2..0.2, y 1.1..2.7) and door (z 2.65..3.95, h 2.5) */
+wallSeg(2.8, 4, -6.125, 2, -3.6, Math.PI / 2);
+wallSeg(2.4, 1.1, -6.125, 0.55, -1.0, Math.PI / 2);
+wallSeg(2.4, 1.3, -6.125, 3.35, -1.0, Math.PI / 2);
+wallSeg(2.45, 4, -6.125, 2, 1.425, Math.PI / 2);
+wallSeg(1.3, 1.5, -6.125, 3.25, 3.3, Math.PI / 2);
+wallSeg(1.05, 4, -6.125, 2, 4.475, Math.PI / 2);
+const leftWains = [
+  box(0.06, 1.3, 2.8, wainscotMat, -5.97, 0.65, -3.6, false),
+  box(0.06, 1.3, 2.45, wainscotMat, -5.97, 0.65, 1.425, false),
+  box(0.06, 1.3, 1.05, wainscotMat, -5.97, 0.65, 4.475, false),
+];
+leftWains.forEach(w => room.add(w));
+
+/* window: frame + glowing sky pane */
+const winFrame = new THREE.Group();
+winFrame.position.set(-6.05, 1.9, -1.0);
+winFrame.rotation.y = Math.PI / 2;
+const frameMat = mat('#6b4a2f', 0.7);
+winFrame.add(box(2.5, 0.1, 0.14, frameMat, 0, 0.85, 0));
+winFrame.add(box(2.5, 0.1, 0.14, frameMat, 0, -0.85, 0));
+winFrame.add(box(0.1, 1.8, 0.14, frameMat, -1.25, 0, 0));
+winFrame.add(box(0.1, 1.8, 0.14, frameMat, 1.25, 0, 0));
+winFrame.add(box(0.06, 1.7, 0.1, frameMat, 0, 0, 0));
+const skyMat = new THREE.MeshBasicMaterial({ map: skyTextures.evening, toneMapped: false });
+const skyPane = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.62), skyMat);
+skyPane.position.z = -0.03;
+winFrame.add(skyPane);
+room.add(winFrame);
+/* window sill + little plant */
+room.add(box(0.34, 0.06, 2.6, woodDark, -5.9, 1.08, -1.0));
+const plantPot = cyl(0.09, 0.07, 0.12, mat('#b8563f', 0.8), -5.82, 1.17, -1.9, 12);
+room.add(plantPot);
+const plantLeaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.13, 1), mat('#5a8f4a', 0.85));
+plantLeaf.position.set(-5.82, 1.33, -1.9); plantLeaf.castShadow = true;
+room.add(plantLeaf);
+
+/* door (hinged, swings outward when guests pass) */
+const door = new THREE.Group();
+door.position.set(-6.05, 0, 2.65);
+const doorPanel = box(0.08, 2.44, 1.26, mat('#7a4a28', 0.65), 0, 1.22, 0.63);
+door.add(doorPanel);
+const doorGlass = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.0),
+  new THREE.MeshStandardMaterial({ color: '#cfe8ef', transparent: true, opacity: 0.22, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false }));
+doorGlass.rotation.y = Math.PI / 2;
+doorGlass.position.set(0.05, 1.62, 0.63);
+door.add(doorGlass);
+door.add(box(0.1, 0.05, 0.3, steel, 0.08, 1.05, 1.05));
+const openSignTex = canvasTex(128, 64, (ctx, w, h) => {
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#12321a'; roundRect(ctx, 2, 2, w - 4, h - 4, 10); ctx.fill();
+  ctx.strokeStyle = '#8fbf6a'; ctx.lineWidth = 3; roundRect(ctx, 2, 2, w - 4, h - 4, 10); ctx.stroke();
+  ctx.fillStyle = '#aef08a'; ctx.font = '800 34px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#8fbf6a'; ctx.shadowBlur = 12; ctx.fillText('OPEN', w / 2, h / 2 + 2);
+});
+const openSign = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.21),
+  new THREE.MeshBasicMaterial({ map: openSignTex, transparent: true, toneMapped: false, side: THREE.DoubleSide }));
+openSign.rotation.y = Math.PI / 2;
+openSign.position.set(0.06, 1.62, 0.63);
+door.add(openSign);
+room.add(door);
+let doorTarget = 0;
+/* welcome mats */
+room.add(box(0.9, 0.02, 0.62, mat('#6a2f22', 0.95), -5.35, 0.012, 3.3, false));
+room.add(box(0.9, 0.02, 0.62, mat('#4a2418', 0.95), -6.75, 0.012, 3.3, false));
+
+/* ceiling beams the lamps hang from */
+room.add(box(12.6, 0.14, 0.2, woodDark, 0, 4.02, -2.6, false));
+room.add(box(12.6, 0.14, 0.2, woodDark, 0, 4.02, 2.6, false));
+
+/* wall poster */
+const poster = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.96),
+  new THREE.MeshStandardMaterial({ map: posterTex, roughness: 0.85 }));
+poster.position.set(-5.98, 2.35, 1.45); poster.rotation.y = Math.PI / 2;
+room.add(poster);
+/* ============================== counters ============================== */
+const counterFrontMat = new THREE.MeshStandardMaterial({ map: wallTileTex, roughness: 0.4 });
+/* serving counter */
+room.add(box(5.8, 0.92, 0.85, wood, 1.7, 0.46, -2.4));
+room.add(box(5.8, 0.62, 0.04, counterFrontMat, 1.7, 0.55, -1.955, false));
+room.add(box(5.8, 0.1, 0.8, mat('#1c130c', 0.9), 1.7, 0.05, -2.4, false));
+room.add(box(6.0, 0.07, 0.98, steel, 1.7, 0.985, -2.4));
+/* warm LED strip under the counter lip */
+const ledMat = new THREE.MeshStandardMaterial({ color: '#331a08', emissive: '#ff9a4d', emissiveIntensity: 1.4, roughness: .6 });
+room.add(box(5.8, 0.025, 0.025, ledMat, 1.7, 0.93, -1.95, false, false));
+/* back counter (grill + fryer live here) */
+room.add(box(3.7, 0.88, 0.75, woodDark, -3.1, 0.44, -4.3));
+room.add(box(3.85, 0.06, 0.88, steel, -3.1, 0.91, -4.3));
+
+/* sneeze guard over the serving counter */
+const glassMat = new THREE.MeshStandardMaterial({ color: '#cfe8ef', transparent: true, opacity: 0.13, roughness: 0.22, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
+const guard = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 0.52), glassMat);
+guard.position.set(1.7, 1.5, -2.12); guard.rotation.x = -0.42;
+room.add(guard);
+[-0.95, 1.7, 4.35].forEach(x => room.add(cyl(0.02, 0.02, 0.56, steel, x, 1.28, -2.08, 10)));
+
+/* register */
+const register = new THREE.Group();
+register.position.set(-0.75, 1.02, -2.45);
+register.add(box(0.42, 0.16, 0.34, darkSteel, 0, 0.08, 0));
+register.add(box(0.36, 0.05, 0.2, mat('#22262b', 0.5), 0, 0.185, 0.04));
+const regScreen = box(0.3, 0.2, 0.03, mat('#111418', 0.4), 0, 0.32, -0.1);
+regScreen.rotation.x = -0.3;
+register.add(regScreen);
+const regGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.16),
+  new THREE.MeshBasicMaterial({ color: '#7ff0b0', toneMapped: false }));
+regGlow.position.set(0, 0.325, -0.082); regGlow.rotation.x = -0.3;
+register.add(regGlow);
+for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++)
+  register.add(box(0.05, 0.02, 0.04, creamMat, -0.12 + j * 0.08, 0.22, 0.02 + i * 0.06, false));
+room.add(register);
+
+/* cutting board, sauces, bread, salads, napkins, tip jar */
+room.add(box(0.55, 0.035, 0.4, wood, 0.2, 1.04, -2.35));
+const sauceColors = ['#d93a2b', '#f3e9d2', '#8a5a33'];
+sauceColors.forEach((c, i) => {
+  const b = cyl(0.045, 0.05, 0.2, mat(c, 0.5), 1.0 + i * 0.14, 1.12, -2.55, 12);
+  room.add(b);
+  room.add(cyl(0.015, 0.02, 0.05, mat('#22262b', 0.6), 1.0 + i * 0.14, 1.245, -2.55, 8));
+});
+const basket = box(0.5, 0.12, 0.36, woodDark, 2.0, 1.08, -2.5);
+room.add(basket);
+for (let i = 0; i < 4; i++) {
+  const bread = box(0.2, 0.07, 0.16, mat('#e8c07a', 0.8), 1.85 + (i % 2) * 0.24, 1.17 + (i > 1 ? 0.07 : 0), -2.5, true);
+  bread.rotation.y = rand(-0.3, 0.3);
+  room.add(bread);
+}
+[2.75, 3.15].forEach((x, i) => {
+  room.add(cyl(0.16, 0.13, 0.1, steel, x, 1.07, -2.5, 20));
+  const fill = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+    mat(i ? '#c93a2e' : '#6f9f4a', 0.9));
+  fill.position.set(x, 1.1, -2.5); fill.scale.y = 0.55; fill.castShadow = true;
+  room.add(fill);
+});
+room.add(box(0.2, 0.16, 0.12, steel, 3.75, 1.1, -2.45));
+room.add(box(0.16, 0.05, 0.02, creamMat, 3.75, 1.16, -2.385, false));
+const tipJar = cyl(0.07, 0.06, 0.14, glassMat.clone(), 4.2, 1.09, -2.35, 14, false);
+room.add(tipJar);
+room.add(cyl(0.05, 0.05, 0.02, mat('#e8b04b', 0.4, 0.7), 4.2, 1.03, -2.35, 12, false));
+
+/* ============================== the döner grill ============================== */
+const grill = new THREE.Group();
+grill.position.set(-3.2, 0.94, -4.28);
+room.add(grill);
+grill.add(box(1.15, 0.22, 0.72, darkSteel, 0, 0.11, 0));
+grill.add(box(1.2, 0.16, 0.78, steel, 0, 1.86, 0));
+grill.add(box(0.5, 0.14, 0.4, darkSteel, 0, 2.0, 0));
+grill.add(box(0.1, 1.6, 0.1, steel, -0.56, 1.02, 0.28));
+grill.add(box(0.1, 1.6, 0.1, steel, 0.56, 1.02, 0.28));
+/* reflector panel behind the meat */
+grill.add(box(1.05, 1.55, 0.06, mat('#6a6f76', 0.25, 0.9), 0, 1.0, -0.3));
+/* gas heater: vertical glowing ceramic rods + blue pilot flames */
+const rodMat = new THREE.MeshStandardMaterial({ color: '#331105', emissive: '#ff6a2a', emissiveIntensity: 2.2, roughness: 0.6 });
+const rods = [];
+for (let i = 0; i < 5; i++) {
+  const rod = cyl(0.026, 0.026, 1.3, rodMat, -0.4 + i * 0.2, 1.0, -0.22, 10, false);
+  grill.add(rod); rods.push(rod);
+}
+const flameMat = new THREE.MeshStandardMaterial({ color: '#0a1a33', emissive: '#4fa8ff', emissiveIntensity: 1.8, roughness: .4 });
+const flames = [];
+for (let i = 0; i < 5; i++) {
+  const f = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.09, 8), flameMat);
+  f.position.set(-0.4 + i * 0.2, 0.3, -0.22);
+  grill.add(f); flames.push(f);
+}
+/* gas pipe */
+grill.add(cyl(0.025, 0.025, 0.5, mat('#c9a227', 0.4, 0.8), 0.5, 0.05, -0.3, 8));
+/* skewer rod + motor */
+grill.add(cyl(0.022, 0.022, 1.75, steel, 0, 1.0, 0.06, 10));
+/* the meat — a bumpy lathe, browned crust texture */
+const meatProfile = [
+  [0.10, 0], [0.16, 0.06], [0.20, 0.2], [0.24, 0.35], [0.22, 0.5],
+  [0.27, 0.65], [0.25, 0.8], [0.30, 0.95], [0.32, 1.05], [0.28, 1.12], [0.12, 1.15],
+].map(p => new THREE.Vector2(p[0], p[1]));
+const meatMat = new THREE.MeshStandardMaterial({ map: meatTex, roughness: 0.62, metalness: 0, emissive: '#3a1a08', emissiveIntensity: 0.12 });
+const meat = new THREE.Mesh(new THREE.LatheGeometry(meatProfile, 26), meatMat);
+meat.position.set(0, 0.32, 0.06);
+meat.castShadow = true;
+grill.add(meat);
+const meatSpin = new THREE.Group();
+/* onion half on top, classic */
+const onion = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), mat('#efe6d0', 0.7));
+onion.position.set(0, 1.47, 0.06); onion.castShadow = true;
+grill.add(onion);
+/* drip tray */
+grill.add(box(0.9, 0.05, 0.5, steel, 0, 0.24, 0.12));
+
+/* ============================== fryer ============================== */
+const fryer = new THREE.Group();
+fryer.position.set(-1.7, 0.94, -4.3);
+room.add(fryer);
+fryer.add(box(0.52, 0.34, 0.46, steel, 0, 0.17, 0));
+const oilMat = new THREE.MeshStandardMaterial({ color: '#3a2a08', emissive: '#c98a2a', emissiveIntensity: 0.35, roughness: 0.25 });
+fryer.add(box(0.4, 0.02, 0.34, oilMat, 0, 0.33, 0, false));
+fryer.add(box(0.3, 0.08, 0.24, darkSteel, 0, 0.38, 0));
+fryer.add(cyl(0.015, 0.015, 0.2, darkSteel, 0.1, 0.46, -0.1, 8));
+
+/* ============================== fridge ============================== */
+const fridge = new THREE.Group();
+fridge.position.set(5.25, 0, -4.5);
+room.add(fridge);
+fridge.add(box(1.15, 2.25, 0.85, mat('#d8dde2', 0.5, 0.4), 0, 1.125, 0));
+fridge.add(box(1.0, 2.0, 0.7, mat('#eef4f8', 0.6), 0, 1.15, 0.06, false));
+const fridgeStrip = box(0.9, 0.03, 0.03, new THREE.MeshStandardMaterial({ color: '#223', emissive: '#cfe8ff', emissiveIntensity: 1.6 }), 0, 2.1, 0.3, false, false);
+fridge.add(fridgeStrip);
+const bottleColors = ['#d94f2b', '#e8b04b', '#7fb069', '#6fb7ff', '#f3e9d2', '#d94f2b'];
+[0.5, 1.05, 1.6].forEach((y, row) => {
+  fridge.add(box(0.95, 0.025, 0.55, steel, 0, y, 0.08, false));
+  for (let i = 0; i < 5; i++) {
+    const b = cyl(0.045, 0.045, 0.24, mat(bottleColors[(i + row) % 6], 0.35), -0.36 + i * 0.18, y + 0.14, 0.08, 10, false);
+    fridge.add(b);
+  }
+});
+const fridgeDoor = new THREE.Group();
+fridgeDoor.position.set(-0.575, 0, 0.43);
+const fdPanel = new THREE.Mesh(new THREE.BoxGeometry(1.12, 2.05, 0.05), glassMat.clone());
+fdPanel.position.set(0.56, 1.15, 0);
+fridgeDoor.add(fdPanel);
+fridgeDoor.add(box(1.12, 0.08, 0.06, steel, 0.56, 2.18, 0));
+fridgeDoor.add(box(1.12, 0.08, 0.06, steel, 0.56, 0.14, 0));
+fridgeDoor.add(box(0.05, 0.5, 0.07, steel, 1.06, 1.2, 0.04));
+fridge.add(fridgeDoor);
+let fridgeDoorTarget = 0;
+
+/* ============================== standing tables ============================== */
+const tables = [
+  { x: 4.3, z: 2.3, spot: V3(4.3, 0, 1.5), occupied: null },
+  { x: 1.6, z: 3.6, spot: V3(1.6, 0, 2.8), occupied: null },
+];
+tables.forEach(t => {
+  const g = new THREE.Group(); g.position.set(t.x, 0, t.z);
+  g.add(cyl(0.48, 0.48, 0.05, wood, 0, 1.05, 0, 24));
+  g.add(cyl(0.05, 0.05, 1.0, darkSteel, 0, 0.53, 0, 12));
+  g.add(cyl(0.26, 0.3, 0.04, darkSteel, 0, 0.02, 0, 20));
+  g.add(box(0.14, 0.12, 0.1, steel, 0.18, 1.14, 0.1));
+  g.add(cyl(0.035, 0.04, 0.16, mat('#d93a2b', 0.5), -0.2, 1.16, -0.12, 10));
+  room.add(g);
+});
+
+/* ============================== pendant lamps ============================== */
+[[-2.6, -2.6], [1.8, -2.6], [3.2, 2.6]].forEach(([x, z]) => {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  g.add(cyl(0.012, 0.012, 0.85, mat('#151515', 0.8), 0, 3.6, 0, 6, false));
+  const shade = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.24, 20, 1, true), mat('#c23b2e', 0.5, 0.3, { side: THREE.DoubleSide }));
+  shade.position.y = 3.14; shade.castShadow = true;
+  g.add(shade);
+  const bulbMat = new THREE.MeshStandardMaterial({ color: '#332211', emissive: '#ffc978', emissiveIntensity: 2.2 });
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), bulbMat);
+  bulb.position.y = 3.06;
+  g.add(bulb);
+  lampBulbMats.push(bulbMat);
+  const pl = new THREE.PointLight('#ffb46b', 7, 9.5, 1.9);
+  pl.position.y = 2.95;
+  g.add(pl);
+  lampLights.push(pl);
+  room.add(g);
+});
+
+/* ============================== menu board / neon / clock ============================== */
+const menu = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 1.8),
+  new THREE.MeshStandardMaterial({ map: menuTex, roughness: 0.9, emissive: '#ffffff', emissiveMap: menuTex, emissiveIntensity: 0.22 }));
+menu.position.set(1.7, 2.85, -4.96);
+room.add(menu);
+room.add(box(3.42, 1.92, 0.05, woodDark, 1.7, 2.85, -4.99, false));
+
+const neonMat = new THREE.MeshBasicMaterial({ map: neonTex, transparent: true, toneMapped: false });
+const neon = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.72), neonMat);
+neon.position.set(-3.2, 3.3, -4.95);
+room.add(neon);
+const neonLight = new THREE.PointLight('#ff5a3c', 3, 6, 2);
+neonLight.position.set(-3.2, 3.1, -4.4);
+scene.add(neonLight);
+
+const clockG = new THREE.Group();
+clockG.position.set(4.3, 3.3, -4.95);
+const face = new THREE.Mesh(new THREE.CircleGeometry(0.3, 28), creamMat);
+clockG.add(face);
+const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.025, 10, 32), darkSteel);
+clockG.add(rim);
+const hourHand = new THREE.Group(), minHand = new THREE.Group();
+const hb = box(0.025, 0.16, 0.012, mat('#22262b', 0.5), 0, 0.08, 0.01, false, false);
+const mb = box(0.018, 0.24, 0.012, mat('#22262b', 0.5), 0, 0.12, 0.015, false, false);
+hourHand.add(hb); minHand.add(mb);
+clockG.add(hourHand, minHand);
+room.add(clockG);
+
+/* shelf with cans above the fridge */
+room.add(box(1.3, 0.05, 0.3, wood, 5.2, 2.75, -4.8, false));
+['#d94f2b', '#e8b04b', '#7fb069'].forEach((c, i) =>
+  room.add(cyl(0.06, 0.06, 0.18, mat(c, 0.5), 4.85 + i * 0.32, 2.87, -4.8, 12)));
+
+/* tame the baked environment so PBR reflections support the mood instead of washing it out */
+scene.traverse(o => {
+  if (o.isMesh && o.material && 'envMapIntensity' in o.material)
+    o.material.envMapIntensity = o.material.metalness > 0.5 ? 0.6 : 0.28;
+});
+/* ============================== particles ============================== */
+/* steam / smoke sprites rising off the meat */
+const steamPool = [];
+for (let i = 0; i < 52; i++) {
+  const sm = new THREE.SpriteMaterial({ map: softTex, color: '#e8ded2', transparent: true, opacity: 0, depthWrite: false });
+  const s = new THREE.Sprite(sm);
+  s.visible = false;
+  scene.add(s);
+  steamPool.push({ s, life: 0, max: 1, vel: V3(), active: false });
+}
+let steamAcc = 0;
+function spawnSteam(x, y, z, scale = 1, tint = '#e8ded2') {
+  const p = steamPool.find(q => !q.active);
+  if (!p) return;
+  p.active = true; p.life = 0; p.max = rand(1.8, 2.8);
+  p.s.visible = true;
+  p.s.position.set(x, y, z);
+  p.s.material.color.set(tint);
+  p.vel.set(rand(-0.06, 0.06), rand(0.3, 0.5), rand(-0.06, 0.06));
+  p.s.scale.setScalar(0.1 * scale);
+}
+/* drifting dust in the lamplight */
+const dustGeo = new THREE.BufferGeometry();
+const dustN = 140, dustPos = new Float32Array(dustN * 3), dustBase = [];
+for (let i = 0; i < dustN; i++) {
+  const x = rand(-5.4, 5.4), y = rand(0.3, 3.8), z = rand(-4.4, 4.4);
+  dustPos.set([x, y, z], i * 3); dustBase.push({ x, y, z, ph: rand(0, 6.28) });
+}
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({
+  size: 0.035, map: softTex, color: '#ffd9a0', transparent: true, opacity: 0.3,
+  depthWrite: false, blending: THREE.AdditiveBlending,
+}));
+scene.add(dust);
+/* meat shavings + fat drips */
+const shavings = [];
+const shavingGeo = new THREE.PlaneGeometry(0.05, 0.03);
+const shavingMat = new THREE.MeshStandardMaterial({ color: '#7a3f1e', roughness: 0.7, side: THREE.DoubleSide });
+for (let i = 0; i < 14; i++) {
+  const m = new THREE.Mesh(shavingGeo, shavingMat);
+  m.visible = false; scene.add(m);
+  shavings.push({ m, vel: V3(), life: 0, active: false, spin: rand(-6, 6) });
+}
+function spawnShaving() {
+  const p = shavings.find(q => !q.active);
+  if (!p) return;
+  p.active = true; p.life = 0; p.m.visible = true;
+  p.m.position.set(-3.2 + rand(-0.12, 0.12), rand(1.3, 1.9), -3.95);
+  p.vel.set(rand(-0.15, 0.15), rand(-0.2, 0), rand(0.1, 0.3));
+}
+const drips = [];
+for (let i = 0; i < 6; i++) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.014, 6, 6),
+    new THREE.MeshStandardMaterial({ color: '#c98a2a', emissive: '#7a4a10', emissiveIntensity: 0.5, roughness: 0.3 }));
+  m.visible = false; scene.add(m);
+  drips.push({ m, life: 0, active: false });
+}
+let dripAcc = 0;
+
+/* ============================== bubbles & name tags ============================== */
+const bubbleTexCache = new Map();
+function bubbleTex(emoji, text) {
+  const k = emoji + '|' + text;
+  if (bubbleTexCache.has(k)) return bubbleTexCache.get(k);
+  const t = canvasTex(512, 300, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(250,246,238,.96)';
+    roundRect(ctx, 10, 8, w - 20, h - 78, 34); ctx.fill();
+    ctx.strokeStyle = '#2b2118'; ctx.lineWidth = 7;
+    roundRect(ctx, 10, 8, w - 20, h - 78, 34); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w / 2 - 26, h - 72); ctx.lineTo(w / 2 + 26, h - 72); ctx.lineTo(w / 2, h - 12);
+    ctx.closePath(); ctx.fillStyle = 'rgba(250,246,238,.96)'; ctx.fill();
+    ctx.strokeStyle = '#2b2118'; ctx.lineWidth = 7; ctx.stroke();
+    ctx.fillStyle = 'rgba(250,246,238,.96)'; ctx.fillRect(w / 2 - 24, h - 80, 48, 10);
+    ctx.textAlign = 'center';
+    ctx.font = '104px serif'; ctx.fillText(emoji, w / 2, 122);
+    ctx.fillStyle = '#2b2118';
+    ctx.font = '800 42px "Bricolage Grotesque", sans-serif';
+    ctx.fillText(text, w / 2, 196);
+  });
+  bubbleTexCache.set(k, t);
+  return t;
+}
+const nameTexCache = new Map();
+function nameTex(name, role) {
+  const k = name + '|' + role;
+  if (nameTexCache.has(k)) return nameTexCache.get(k);
+  const t = canvasTex(320, 80, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = role ? 'rgba(194,59,46,.92)' : 'rgba(24,17,12,.82)';
+    roundRect(ctx, 4, 8, w - 8, h - 16, 28); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,138,61,.5)'; ctx.lineWidth = 3;
+    roundRect(ctx, 4, 8, w - 8, h - 16, 28); ctx.stroke();
+    ctx.fillStyle = '#f5ecdd'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = '700 34px "Bricolage Grotesque", sans-serif';
+    ctx.fillText(name + (role ? ' · ' + role : ''), w / 2, h / 2 + 2);
+  });
+  nameTexCache.set(k, t);
+  return t;
+}
+function attachName(person, name, role) {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTex(name, role), transparent: true, depthWrite: false, fog: false, toneMapped: false }));
+  sp.scale.set(0.78, 0.195, 1);
+  sp.position.y = 2.06;
+  person.root.add(sp);
+  person.nameTag = sp;
+}
+function say(person, emoji, text, ttl = 2.6) {
+  if (!CFG.labels) return;
+  if (person.bubble) { person.root.remove(person.bubble); person.bubble.material.dispose(); }
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: bubbleTex(emoji, text), transparent: true, depthWrite: false, fog: false, toneMapped: false }));
+  sp.material.color.setScalar(0.84);
+  sp.position.y = 2.42;
+  sp.scale.set(0.01, 0.006, 1);
+  person.root.add(sp);
+  person.bubble = sp;
+  person.bubbleT = 0; person.bubbleTTL = ttl;
+}
+
+/* ============================== people ============================== */
+const GEO = {
+  leg: new THREE.CapsuleGeometry(0.085, 0.62, 4, 8),
+  arm: new THREE.CapsuleGeometry(0.06, 0.34, 4, 8),
+  torso: new THREE.CapsuleGeometry(0.185, 0.36, 4, 10),
+  head: new THREE.SphereGeometry(0.16, 18, 14),
+  hair: new THREE.SphereGeometry(0.165, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+  eye: new THREE.SphereGeometry(0.022, 8, 6),
+  nose: new THREE.SphereGeometry(0.026, 8, 6),
+  hand: new THREE.SphereGeometry(0.065, 10, 8),
+  shoe: new THREE.BoxGeometry(0.12, 0.07, 0.22),
+};
+const SKINS = ['#f2c49b', '#e0a878', '#c98d5f', '#a5673f', '#8a5030', '#f5d3b3'];
+const JACKETS = ['#c23b2e', '#3f6fb5', '#4a7d4f', '#d9a13b', '#7a4f9e', '#37474f', '#b5651d', '#5b8c85', '#a63d57', '#6b7686'];
+const PANTS = ['#2e3440', '#4a3b2f', '#33506b', '#555b52', '#3c2f45', '#6b4a2f'];
+const HAIRS = ['#2b2118', '#4a3220', '#151515', '#7a4a21', '#b8b8b8', '#8a3324'];
+const NAMES = ['Ayşe', 'Mert', 'Lena', 'Jonas', 'Sofia', 'Ali', 'Emma', 'Kerem', 'Mia', 'Deniz', 'Hannah', 'Emre', 'Luca', 'Zeynep', 'Ben', 'Elif'];
+
+function makePerson(o) {
+  const root = new THREE.Group();
+  const skin = mat(o.skin, 0.75), jacket = mat(o.jacket, 0.82), pants = mat(o.pants, 0.85);
+  const mk = (geo, m, x, y, z) => { const mm = new THREE.Mesh(geo, m); mm.position.set(x, y, z); mm.castShadow = true; return mm; };
+  const lLeg = new THREE.Group(), rLeg = new THREE.Group();
+  lLeg.position.set(-0.095, 0.84, 0); rLeg.position.set(0.095, 0.84, 0);
+  const lm = mk(GEO.leg, pants, 0, -0.42, 0), rm = mk(GEO.leg, pants, 0, -0.42, 0);
+  lLeg.add(lm, mk(GEO.shoe, mat('#1c1a18', 0.7), 0, -0.78, 0.04));
+  rLeg.add(rm, mk(GEO.shoe, mat('#1c1a18', 0.7), 0, -0.78, 0.04));
+  root.add(lLeg, rLeg);
+  const torso = mk(GEO.torso, jacket, 0, 1.16, 0);
+  root.add(torso);
+  const lArm = new THREE.Group(), rArm = new THREE.Group();
+  lArm.position.set(-0.26, 1.42, 0); rArm.position.set(0.26, 1.42, 0);
+  lArm.add(mk(GEO.arm, jacket, 0, -0.24, 0));
+  rArm.add(mk(GEO.arm, jacket, 0, -0.24, 0));
+  const handL = new THREE.Group(), handR = new THREE.Group();
+  handL.position.y = -0.47; handR.position.y = -0.47;
+  handL.add(mk(GEO.hand, skin, 0, 0, 0));
+  handR.add(mk(GEO.hand, skin, 0, 0, 0));
+  lArm.add(handL); rArm.add(handR);
+  root.add(lArm, rArm);
+  const headG = new THREE.Group(); headG.position.y = 1.62;
+  headG.add(mk(GEO.head, skin, 0, 0, 0));
+  headG.add(mk(GEO.eye, mat('#1a1410', 0.4), -0.06, 0.04, 0.14));
+  headG.add(mk(GEO.eye, mat('#1a1410', 0.4), 0.06, 0.04, 0.14));
+  headG.add(mk(GEO.nose, skin, 0, -0.01, 0.155));
+  if (o.hair) {
+    const hm = mk(GEO.hair, mat(o.hair, 0.9), 0, 0.02, -0.01);
+    headG.add(hm);
+  }
+  if (o.hat) {
+    const hat = mk(GEO.hair, mat(o.hat, 0.85), 0, 0.05, 0);
+    hat.scale.setScalar(1.06);
+    headG.add(hat);
+    headG.add(mk(new THREE.BoxGeometry(0.2, 0.02, 0.12), mat(o.hat, 0.85), 0, 0.06, 0.16));
+  }
+  root.add(headG);
+  root.scale.setScalar(o.scale || 1);
+  scene.add(root);
+  return {
+    root, lLeg, rLeg, lArm, rArm, handL, handR, headG, torso,
+    phase: rand(0, 6.28), walkPhase: 0, moving: false, targetYaw: 0,
+    bubble: null, bubbleT: 0, bubbleTTL: 0, nameTag: null, food: null,
+  };
+}
+
+/* the clerk: apron, cap, moustache, knife */
+const clerk = {
+  person: makePerson({ skin: '#e0a878', jacket: '#c23b2e', pants: '#2e3440', hair: '#2b2118', scale: 1.02 }),
+  state: 'idle', task: null, timer: 0, action: null,
+  target: V3(-0.2, 0, -3.35), home: V3(-0.2, 0, -3.35),
+};
+{
+  const p = clerk.person;
+  p.root.position.copy(clerk.home);
+  p.root.rotation.y = 0;
+  const apron = box(0.31, 0.46, 0.05, creamMat, 0, 1.1, 0.18);
+  p.root.add(apron);
+  p.root.add(box(0.05, 0.2, 0.02, creamMat, -0.1, 1.42, 0.17, false));
+  p.root.add(box(0.05, 0.2, 0.02, creamMat, 0.1, 1.42, 0.17, false));
+  const cap = cyl(0.13, 0.16, 0.12, creamMat, 0, 1.8, 0, 14);
+  p.root.add(cap);
+  p.root.add(box(0.1, 0.028, 0.035, mat('#2b2118', 0.9), 0, 1.585, 0.15, false));
+  /* knife in right hand */
+  const knife = new THREE.Group();
+  knife.add(box(0.015, 0.26, 0.05, steel, 0, -0.13, 0));
+  knife.add(box(0.022, 0.1, 0.032, mat('#1c1a18', 0.6), 0, 0.05, 0));
+  knife.position.set(0, -0.05, 0.05);
+  knife.rotation.x = -0.5;
+  p.handR.add(knife);
+  attachName(p, 'Mehmet', 'Chef');
+}
+
+/* food models */
+function makeFood(type) {
+  const g = new THREE.Group();
+  if (type === 'doener') {
+    const bread = box(0.17, 0.08, 0.13, mat('#e8c07a', 0.8), 0, 0, 0);
+    bread.rotation.z = 0.1;
+    g.add(bread);
+    g.add(box(0.15, 0.025, 0.11, mat('#6f9f4a', 0.9), 0, 0.045, 0, false));
+    g.add(box(0.14, 0.02, 0.1, mat('#8a4a26', 0.8), 0, 0.062, 0, false));
+    g.add(box(0.13, 0.015, 0.09, mat('#c93a2e', 0.8), 0, 0.076, 0, false));
+  } else if (type === 'duerum') {
+    const wrap = cyl(0.045, 0.05, 0.24, mat('#e8c07a', 0.8), 0, 0, 0, 12);
+    wrap.rotation.z = Math.PI / 2 - 0.3;
+    g.add(wrap);
+    const foil = cyl(0.046, 0.046, 0.06, mat('#f3e9d2', 0.7), -0.08, -0.02, 0, 10, false);
+    foil.rotation.z = Math.PI / 2 - 0.3;
+    g.add(foil);
+  } else if (type === 'pommes') {
+    g.add(box(0.12, 0.1, 0.09, mat('#d93a2b', 0.7), 0, 0, 0));
+    for (let i = 0; i < 6; i++) {
+      const f = box(0.018, 0.12, 0.018, mat('#e8c07a', 0.8), rand(-0.04, 0.04), 0.08, rand(-0.03, 0.03), false);
+      f.rotation.set(rand(-0.25, 0.25), 0, rand(-0.25, 0.25));
+      g.add(f);
+    }
+  } else { /* ayran */
+    g.add(cyl(0.04, 0.035, 0.12, mat('#f7f3ea', 0.5), 0, 0, 0, 12));
+    g.add(cyl(0.042, 0.042, 0.012, mat('#6fb7ff', 0.4), 0, 0.065, 0, 12, false));
+  }
+  return g;
+}
+const ORDERS = [
+  { type: 'doener', emoji: '🥙', label: 'Einmal Döner!', w: 0.5, meat: true },
+  { type: 'duerum', emoji: '🌯', label: 'Dürüm, bitte!', w: 0.25, meat: true },
+  { type: 'pommes', emoji: '🍟', label: 'Pommes rot-weiß', w: 0.15, meat: false },
+  { type: 'ayran', emoji: '🥤', label: 'Ein Ayran!', w: 0.1, meat: false },
+];
+function rollOrder() {
+  let r = Math.random();
+  for (const o of ORDERS) { if (r < o.w) return o; r -= o.w; }
+  return ORDERS[0];
+}
+
+/* customers */
+const customers = [];
+const queue = [];
+const QUEUE_SLOTS = [V3(-0.3, 0, -1.35), V3(0.8, 0, -1.35), V3(1.9, 0, -1.35), V3(3.0, 0, -1.35)];
+const ENTER_WPS = () => [V3(-5.2, 0, 3.3), V3(-3.4 + rand(-0.4, 0.4), 0, 1.7 + rand(-0.4, 0.4)), V3(-1.2 + rand(-0.3, 0.3), 0, 0.3 + rand(-0.3, 0.3))];
+const EXIT_WPS = () => [V3(-2.8 + rand(-0.4, 0.4), 0, 1.9 + rand(-0.4, 0.4)), V3(-5.2, 0, 3.3), V3(-7.2, 0, 3.3)];
+
+function spawnCustomer(instantSlot = -1) {
+  if (customers.length >= 7) return null;
+  const o = {
+    skin: pick(SKINS), jacket: pick(JACKETS), pants: pick(PANTS),
+    hair: Math.random() < 0.85 ? pick(HAIRS) : null,
+    hat: Math.random() < 0.25 ? pick(JACKETS) : null,
+    scale: rand(0.9, 1.06),
+  };
+  const p = makePerson(o);
+  const c = {
+    person: p, name: pick(NAMES), state: 'enter', wp: ENTER_WPS(), wpi: 0,
+    queueIndex: -1, order: rollOrder(), timer: 0, table: null,
+    speed: rand(1.15, 1.55),
+  };
+  if (Math.random() < 0.3) {
+    const bag = box(0.16, 0.2, 0.08, mat(pick(JACKETS), 0.8), 0, -0.12, 0);
+    p.handL.add(bag);
+  }
+  attachName(p, c.name, '');
+  if (instantSlot >= 0 && instantSlot < 4) {
+    c.state = 'waitQueue'; c.queueIndex = instantSlot;
+    queue.push(c);
+    p.root.position.copy(QUEUE_SLOTS[instantSlot]);
+    p.root.rotation.y = Math.PI; p.targetYaw = Math.PI;
+  } else {
+    p.root.position.set(-7.2, 0, 3.3);
+    p.targetYaw = Math.PI / 2;
+    p.root.rotation.y = Math.PI / 2;
+  }
+  customers.push(c);
+  if (instantSlot < 0) {
+    Audio.chime();
+    addLog(`🚪 <b>${c.name}</b> comes in`);
+    if (Math.random() < 0.35) say(clerk.person, '👋', 'Hallo!', 2);
+  }
+  return c;
+}
+function removeCustomer(c) {
+  scene.remove(c.person.root);
+  if (c.person.bubble) c.person.bubble.material.dispose();
+  if (c.person.nameTag) c.person.nameTag.material.dispose();
+  const i = customers.indexOf(c);
+  if (i >= 0) customers.splice(i, 1);
+  const qi = queue.indexOf(c);
+  if (qi >= 0) { queue.splice(qi, 1); advanceQueue(); }
+  if (c.table) { c.table.occupied = null; c.table = null; }
+}
+function advanceQueue() {
+  queue.forEach((q, i) => {
+    q.queueIndex = i;
+    if (q.state === 'waitQueue' || q.state === 'shift') {
+      q.state = 'shift';
+      q.target = QUEUE_SLOTS[i].clone();
+    }
+  });
+}
+/* ============================== audio (all procedural, tied to visible events) ============================== */
+const Audio = {
+  ctx: null, master: null, sizzleGain: null, started: false, lastHeat: -1,
+  init() {
+    if (this.started) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.ctx = ctx;
+      this.master = ctx.createGain();
+      this.master.gain.value = CFG.sound ? 0.8 : 0;
+      this.master.connect(ctx.destination);
+      /* crackling sizzle loop */
+      const len = ctx.sampleRate * 2;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (Math.random() < 0.02 ? 1 : 0.16);
+      const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 5200; bp.Q.value = 0.7;
+      this.sizzleGain = ctx.createGain(); this.sizzleGain.gain.value = 0;
+      src.connect(bp); bp.connect(this.sizzleGain); this.sizzleGain.connect(this.master);
+      src.start();
+      /* faint room ambience */
+      const abuf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const ad = abuf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) { last = clamp(last + (Math.random() * 2 - 1) * 0.02, -1, 1); ad[i] = last * 3; }
+      const asrc = ctx.createBufferSource(); asrc.buffer = abuf; asrc.loop = true;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+      const ag = ctx.createGain(); ag.gain.value = 0.045;
+      asrc.connect(lp); lp.connect(ag); ag.connect(this.master);
+      asrc.start();
+      this.started = true;
+    } catch (e) { /* audio unavailable — stay silent */ }
+  },
+  resume() { this.init(); if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  setMuted(m) {
+    if (!this.ctx) return;
+    this.master.gain.setTargetAtTime(m ? 0 : 0.8, this.ctx.currentTime, 0.08);
+  },
+  heat(h) {
+    if (!this.ctx || Math.abs(h - this.lastHeat) < 0.01) return;
+    this.lastHeat = h;
+    this.sizzleGain.gain.setTargetAtTime(CFG.paused ? 0 : 0.03 + 0.13 * h, this.ctx.currentTime, 0.25);
+  },
+  tone(freq, dur, gain, type = 'sine', when = 0) {
+    if (!this.ctx || !CFG.sound) return;
+    const t = this.ctx.currentTime + when;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + 0.05);
+  },
+  ding() { this.tone(1568, 0.7, 0.12); this.tone(2093, 0.6, 0.08, 'sine', 0.02); },
+  chime() { this.tone(987, 0.45, 0.06); this.tone(784, 0.5, 0.05, 'sine', 0.13); },
+  coin() { this.tone(2200, 0.09, 0.05, 'triangle'); this.tone(3300, 0.08, 0.04, 'triangle', 0.05); },
+  chop() {
+    if (!this.ctx || !CFG.sound) return;
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(130, t);
+    o.frequency.exponentialRampToValueAtTime(55, t + 0.08);
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + 0.12);
+    this.tone(900, 0.04, 0.06, 'square');
+  },
+};
+window.addEventListener('pointerdown', () => Audio.resume(), { once: false });
+window.addEventListener('keydown', () => Audio.resume(), { once: false });
+
+/* ============================== event log & stats ============================== */
+const logEl = $('log');
+function fmtTime(mins) {
+  const h = Math.floor(mins / 60) % 24, m = Math.floor(mins % 60);
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+function addLog(html) {
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="t">${fmtTime(simMinutes)}</span>${html}`;
+  logEl.prepend(li);
+  while (logEl.children.length > 4) logEl.lastChild.remove();
+  [...logEl.children].forEach((el, i) => el.classList.toggle('old', i > 1));
+}
+
+/* ============================== movement ============================== */
+function stepTowards(p, target, dt, speed) {
+  const dx = target.x - p.root.position.x, dz = target.z - p.root.position.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 0.05) return true;
+  const step = Math.min(d, speed * dt);
+  p.root.position.x += dx / d * step;
+  p.root.position.z += dz / d * step;
+  p.targetYaw = Math.atan2(dx, dz);
+  p.moving = true;
+  return false;
+}
+function followWaypoints(c, dt) {
+  if (c.wpi >= c.wp.length) return true;
+  if (stepTowards(c.person, c.wp[c.wpi], dt, c.speed)) c.wpi++;
+  return c.wpi >= c.wp.length;
+}
+
+/* flying food + coin arcs */
+const flyers = [];
+function fly(mesh, from, to, dur, onDone) {
+  scene.add(mesh);
+  mesh.position.copy(from);
+  flyers.push({ mesh, from: from.clone(), to: to.clone(), t: 0, dur, onDone });
+}
+function handWorld(p) {
+  const v = V3();
+  p.handR.getWorldPosition(v);
+  return v;
+}
+
+/* ============================== clerk logic ============================== */
+const STATIONS = {
+  doener: { pos: V3(-3.2, 0, -3.42), action: 'slice', dur: 1.7 },
+  duerum: { pos: V3(-3.2, 0, -3.42), action: 'slice', dur: 1.7 },
+  pommes: { pos: V3(-1.7, 0, -3.42), action: 'fry', dur: 1.5 },
+  ayran: { pos: V3(4.45, 0, -3.5), action: 'fridge', dur: 1.3 },
+};
+const SERVE_POS = V3(-0.3, 0, -3.1);
+let chopAcc = 0;
+
+function startOrder(c) {
+  clerk.task = c;
+  c.state = 'waitFood';
+  const st = STATIONS[c.order.type];
+  clerk.state = 'walk';
+  clerk.target = st.pos.clone();
+  clerk.action = st.action;
+  clerk.timer = st.dur;
+  say(c.person, c.order.emoji, c.order.label, 2.4);
+}
+function finishOrder() {
+  const c = clerk.task;
+  if (!c) { clerk.state = 'idle'; return; }
+  const food = makeFood(c.order.type);
+  const from = handWorld(clerk.person);
+  const to = handWorld(c.person);
+  c.person.food = food;
+  fly(food, from, to, 0.55, () => {
+    c.person.handR.add(food);
+    food.position.set(0, -0.06, 0.08);
+    food.rotation.set(0.2, 0, 0);
+  });
+  /* coin flies to the register */
+  const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.008, 12),
+    mat('#e8b04b', 0.3, 0.8));
+  fly(coin, handWorld(c.person), V3(-0.75, 1.3, -2.45), 0.5, () => {
+    scene.remove(coin);
+    Audio.coin();
+  });
+  Audio.ding();
+  served++;
+  if (c.order.meat) {
+    meatLevel = Math.max(0.18, meatLevel - 0.055);
+    if (meatLevel <= 0.22) {
+      meatLevel = 1; meatPop = 1;
+      say(clerk.person, '🔥', 'Frischer Spieß!', 2.4);
+      addLog('🔥 <b>Mehmet</b> loads a fresh skewer');
+    }
+  }
+  addLog(`${c.order.emoji} <b>Mehmet</b> serves ${c.order.type === 'doener' ? 'a Döner' : c.order.type === 'duerum' ? 'a Dürüm' : c.order.type === 'pommes' ? 'Pommes' : 'an Ayran'} to <b>${c.name}</b>`);
+  say(c.person, '😋', 'Danke!', 2);
+  c.state = 'received';
+  c.timer = 0.9;
+  const qi = queue.indexOf(c);
+  if (qi >= 0) { queue.splice(qi, 1); advanceQueue(); }
+  clerk.task = null;
+  clerk.state = 'walkHome';
+  clerk.target = clerk.home.clone();
+}
+function updateClerk(dt, t) {
+  const p = clerk.person;
+  p.moving = false;
+  if (clerk.state === 'idle') {
+    if (queue.length && queue[0].state === 'waitQueue') startOrder(queue[0]);
+    else {
+      p.root.position.x = lerp(p.root.position.x, clerk.home.x, dt * 2);
+      p.root.position.z = lerp(p.root.position.z, clerk.home.z, dt * 2);
+      p.targetYaw = 0;
+    }
+  } else if (clerk.state === 'walk' || clerk.state === 'walkHome' || clerk.state === 'walkServe') {
+    const arrived = stepTowards(p, clerk.target, dt, 1.6);
+    if (arrived) {
+      if (clerk.state === 'walk') {
+        clerk.state = 'act';
+        if (clerk.action === 'fridge') fridgeDoorTarget = -1.0;
+        p.targetYaw = clerk.action === 'fridge' ? Math.atan2(0.8, -0.9) : Math.PI;
+      } else if (clerk.state === 'walkServe') {
+        clerk.state = 'serve'; clerk.timer = 0.55;
+        p.targetYaw = 0;
+      } else { clerk.state = 'idle'; p.targetYaw = 0; }
+    }
+  } else if (clerk.state === 'act') {
+    clerk.timer -= dt;
+    if (clerk.action === 'slice') {
+      chopAcc += dt;
+      if (chopAcc > 0.28) { chopAcc = 0; Audio.chop(); spawnShaving(); spawnShaving(); }
+      if (Math.random() < dt * 6) spawnSteam(-3.2 + rand(-0.15, 0.15), rand(1.4, 2.1), -3.9, 0.7);
+    } else if (clerk.action === 'fry') {
+      if (Math.random() < dt * 10) spawnSteam(-1.7 + rand(-0.12, 0.12), 1.35, -4.3, 0.55, '#f0e6d0');
+    }
+    if (clerk.timer <= 0) {
+      fridgeDoorTarget = 0;
+      clerk.state = 'walkServe';
+      clerk.target = SERVE_POS.clone();
+    }
+  } else if (clerk.state === 'serve') {
+    clerk.timer -= dt;
+    if (clerk.timer <= 0) finishOrder();
+  }
+  p.root.rotation.y = lerpAngle(p.root.rotation.y, p.targetYaw, Math.min(1, dt * 8));
+}
+
+/* ============================== customer logic ============================== */
+function updateCustomer(c, dt, t) {
+  const p = c.person;
+  p.moving = false;
+  switch (c.state) {
+    case 'enter':
+      if (followWaypoints(c, dt)) {
+        if (queue.length < 4) {
+          c.queueIndex = queue.length;
+          queue.push(c);
+          c.state = 'shift';
+          c.target = QUEUE_SLOTS[c.queueIndex].clone();
+          if (Math.random() < 0.4) say(p, '👋', 'Hallo!', 1.8);
+        } else {
+          say(p, '😕', 'Zu voll…', 2.2);
+          addLog(`😕 Too busy — <b>${c.name}</b> leaves`);
+          c.state = 'leave'; c.wp = EXIT_WPS(); c.wpi = 0;
+        }
+      }
+      break;
+    case 'shift':
+      if (stepTowards(p, c.target, dt, c.speed)) { c.state = 'waitQueue'; p.targetYaw = Math.PI; }
+      break;
+    case 'waitQueue':
+    case 'waitFood':
+      p.targetYaw = Math.PI;
+      break;
+    case 'received':
+      c.timer -= dt;
+      if (c.timer <= 0) {
+        const freeTable = tables.find(tb => !tb.occupied);
+        if (freeTable && Math.random() < 0.5) {
+          freeTable.occupied = c; c.table = freeTable;
+          c.state = 'walkTable';
+          c.wp = [V3(freeTable.spot.x, 0, freeTable.spot.z + 0.9), freeTable.spot.clone()];
+          c.wpi = 0;
+        } else {
+          c.state = 'leave'; c.wp = EXIT_WPS(); c.wpi = 0;
+        }
+      }
+      break;
+    case 'walkTable':
+      if (followWaypoints(c, dt)) {
+        c.state = 'eat';
+        c.timer = rand(6, 10);
+        c.eatTotal = c.timer;
+        p.targetYaw = 0;
+        addLog(`🪑 <b>${c.name}</b> sits down to eat`);
+      }
+      break;
+    case 'eat': {
+      c.timer -= dt;
+      p.targetYaw = 0;
+      if (p.food) {
+        const k = clamp(c.timer / c.eatTotal, 0.12, 1);
+        p.food.scale.setScalar(k);
+      }
+      if (c.timer <= 0) {
+        if (p.food) { p.handR.remove(p.food); p.food = null; }
+        if (c.table) { c.table.occupied = null; c.table = null; }
+        if (Math.random() < 0.5) say(p, '😋', 'Sehr lecker!', 2);
+        c.state = 'leave'; c.wp = EXIT_WPS(); c.wpi = 0;
+      }
+      break;
+    }
+    case 'leave':
+      if (followWaypoints(c, dt)) removeCustomer(c);
+      break;
+  }
+  if (p.root.position.x < -6.4 && c.state === 'leave') removeCustomer(c);
+  p.root.rotation.y = lerpAngle(p.root.rotation.y, p.targetYaw, Math.min(1, dt * 8));
+}
+
+/* ============================== character animation ============================== */
+function animatePerson(p, dt, t, role) {
+  const moving = p.moving;
+  if (moving) {
+    p.walkPhase += dt * 8.5;
+    const s = Math.sin(p.walkPhase);
+    p.lLeg.rotation.x = s * 0.55;
+    p.rLeg.rotation.x = -s * 0.55;
+    p.lArm.rotation.x = -s * 0.35;
+    p.rArm.rotation.x = s * 0.35;
+    p.root.position.y = Math.abs(Math.cos(p.walkPhase)) * 0.03;
+  } else {
+    p.walkPhase = 0;
+    p.lLeg.rotation.x = lerp(p.lLeg.rotation.x, 0, dt * 8);
+    p.rLeg.rotation.x = lerp(p.rLeg.rotation.x, 0, dt * 8);
+    p.root.position.y = lerp(p.root.position.y, 0, dt * 8);
+    const breathe = Math.sin(t * 1.7 + p.phase) * 0.04;
+    p.lArm.rotation.x = lerp(p.lArm.rotation.x, breathe, dt * 6);
+    p.rArm.rotation.x = lerp(p.rArm.rotation.x, -breathe, dt * 6);
+    p.headG.rotation.y = Math.sin(t * 0.35 + p.phase) * 0.22;
+  }
+  /* role-specific arm overrides */
+  if (role === 'clerk') {
+    if (clerk.state === 'act' && clerk.action === 'slice') {
+      p.rArm.rotation.x = -1.15 + Math.sin(t * 15) * 0.45;
+      p.torso.rotation.x = 0.07;
+    } else if (clerk.state === 'act' && clerk.action === 'fry') {
+      p.rArm.rotation.x = -1.0 + Math.sin(t * 6) * 0.15;
+    } else if (clerk.state === 'act' && clerk.action === 'fridge') {
+      p.rArm.rotation.x = -1.4;
+    } else if (clerk.state === 'serve') {
+      p.rArm.rotation.x = -1.5;
+      p.torso.rotation.x = 0.05;
+    } else {
+      p.torso.rotation.x = lerp(p.torso.rotation.x, 0, dt * 6);
+    }
+  } else if (role === 'eat') {
+    p.rArm.rotation.x = -2.0 + Math.sin(t * 2.6 + p.phase) * 0.3;
+    p.headG.rotation.x = Math.sin(t * 2.6 + p.phase) * 0.08;
+  } else if (role === 'carry') {
+    p.rArm.rotation.x = -0.9;
+  } else {
+    p.headG.rotation.x = lerp(p.headG.rotation.x, 0, dt * 6);
+  }
+  /* speech bubble pop + expiry */
+  if (p.bubble) {
+    p.bubbleT += dt;
+    const k = Math.min(1, p.bubbleT / 0.22);
+    const over = 1 + Math.sin(Math.min(1, k) * Math.PI) * 0.18;
+    const base = 1.05 * k * over;
+    p.bubble.scale.set(base, base * 0.586, 1);
+    p.bubble.material.opacity = p.bubbleT > p.bubbleTTL - 0.3 ? clamp((p.bubbleTTL - p.bubbleT) / 0.3, 0, 1) : 1;
+    if (p.bubbleT >= p.bubbleTTL) {
+      p.root.remove(p.bubble);
+      p.bubble.material.dispose();
+      p.bubble = null;
+    }
+  }
+  if (p.nameTag) p.nameTag.visible = CFG.labels;
+}
+/* ============================== time of day ============================== */
+const TOD = {
+  day:     { bg: '#3a4148', hemi: 0.45, lamp: 3.5, spot: 60, spotCol: '#fff2df', dir: 1.0, dirCol: '#dfeaf5', winI: 1.1,  neon: 0.6, neonL: 1.2 },
+  evening: { bg: '#191016', hemi: 0.27, lamp: 7,   spot: 55, spotCol: '#ffd9ae', dir: 0.6, dirCol: '#ff9a6a', winI: 0.9, neon: 0.9, neonL: 1.6 },
+  night:   { bg: '#0a0c14', hemi: 0.15, lamp: 8.5, spot: 40, spotCol: '#ffc98f', dir: 0.3, dirCol: '#7d95c9', winI: 0.55, neon: 1.1, neonL: 2.4 },
+};
+const todCur = {
+  bg: new THREE.Color(TOD.evening.bg), hemi: TOD.evening.hemi, lamp: TOD.evening.lamp,
+  spot: TOD.evening.spot, spotCol: new THREE.Color(TOD.evening.spotCol),
+  dir: TOD.evening.dir, dirCol: new THREE.Color(TOD.evening.dirCol),
+  winI: TOD.evening.winI, neon: TOD.evening.neon, neonL: TOD.evening.neonL,
+};
+function setTod(name) {
+  CFG.tod = name;
+  skyMat.map = skyTextures[name];
+  skyMat.needsUpdate = true;
+}
+function updateTod(dt) {
+  const tgt = TOD[CFG.tod], k = 1 - Math.exp(-dt * 2.2);
+  todCur.bg.lerp(new THREE.Color(tgt.bg), k);
+  todCur.spotCol.lerp(new THREE.Color(tgt.spotCol), k);
+  todCur.dirCol.lerp(new THREE.Color(tgt.dirCol), k);
+  for (const key of ['hemi', 'lamp', 'spot', 'dir', 'winI', 'neon', 'neonL'])
+    todCur[key] = lerp(todCur[key], tgt[key], k);
+  scene.background.copy(todCur.bg);
+  scene.fog.color.copy(todCur.bg);
+  hemi.intensity = todCur.hemi;
+  key.intensity = todCur.spot; key.color.copy(todCur.spotCol);
+  windowLight.intensity = todCur.dir; windowLight.color.copy(todCur.dirCol);
+  lampLights.forEach(l => l.intensity = todCur.lamp);
+  lampBulbMats.forEach(m => m.emissiveIntensity = todCur.lamp / 3.5);
+  skyMat.color.setScalar(todCur.winI);
+}
+
+/* ============================== UI wiring ============================== */
+function bindRange(id, out, key, fmt) {
+  const el = $(id), o = $(out);
+  const upd = () => {
+    CFG[key] = parseFloat(el.value);
+    o.textContent = fmt(CFG[key]);
+    const p = (el.value - el.min) / (el.max - el.min) * 100;
+    el.style.setProperty('--val', p + '%');
+  };
+  el.addEventListener('input', upd);
+  upd();
+}
+bindRange('cSpeed', 'oSpeed', 'speed', v => v.toFixed(2) + '×');
+bindRange('cSkewer', 'oSkewer', 'skewer', v => v.toFixed(2) + '×');
+bindRange('cHeat', 'oHeat', 'heat', v => Math.round(v * 100) + '%');
+bindRange('cCrowd', 'oCrowd', 'crowd', v => v.toFixed(2) + '×');
+bindRange('cSteam', 'oSteam', 'steam', v => v.toFixed(2) + '×');
+bindRange('cGlow', 'oGlow', 'glow', v => v.toFixed(2));
+$('cTod').addEventListener('change', e => setTod(e.target.value));
+$('cOrbit').addEventListener('change', e => CFG.autoOrbit = e.target.checked);
+$('cLabels').addEventListener('change', e => CFG.labels = e.target.checked);
+
+function toggleSound() {
+  CFG.sound = !CFG.sound;
+  Audio.resume();
+  Audio.setMuted(!CFG.sound);
+  $('soundBtn').classList.toggle('muted', !CFG.sound);
+  $('soundLabel').textContent = CFG.sound ? 'Sound on' : 'Muted';
+}
+function togglePause() {
+  CFG.paused = !CFG.paused;
+  $('pauseBtn').classList.toggle('paused', CFG.paused);
+  $('pauseIcon').textContent = CFG.paused ? '▶' : '⏸';
+  $('pauseLabel').textContent = CFG.paused ? 'Resume' : 'Pause';
+  if (CFG.paused) Audio.heat(0);
+}
+$('soundBtn').addEventListener('click', toggleSound);
+$('pauseBtn').addEventListener('click', togglePause);
+
+let camTween = null;
+function currentHome() {
+  if (portrait) {
+    const tgt = V3(-0.3, 0.3, 2.0);
+    const off = V3(Math.sin(1.02) * Math.sin(0.6), Math.cos(1.02), Math.sin(1.02) * Math.cos(0.6)).multiplyScalar(16.5);
+    return { pos: tgt.clone().add(off), tgt };
+  }
+  return { pos: HOME_POS.clone(), tgt: HOME_TGT.clone() };
+}
+function resetView() {
+  const h = currentHome();
+  camTween = { t: 0, dur: 0.8, fromP: camera.position.clone(), fromT: controls.target.clone(), toP: h.pos, toT: h.tgt };
+  controls.enabled = false;
+}
+$('bView').addEventListener('click', resetView);
+
+let rushLeft = 0, rushTimer = 0;
+function rush() {
+  rushLeft = 3; rushTimer = 0;
+  addLog('🏃 <b>Rush hour!</b> A wave of guests arrives');
+}
+$('bRush').addEventListener('click', rush);
+
+function resetShop() {
+  [...customers].forEach(removeCustomer);
+  queue.length = 0;
+  flyers.forEach(f => scene.remove(f.mesh));
+  flyers.length = 0;
+  clerk.state = 'idle'; clerk.task = null;
+  clerk.person.root.position.copy(clerk.home);
+  meatLevel = 1; served = 0; simMinutes = 18 * 60 + 24;
+  tables.forEach(t => t.occupied = null);
+  spawnTimer = 1.5;
+  logEl.innerHTML = '';
+  addLog('🧹 Shop reset — everything fresh');
+}
+$('bReset').addEventListener('click', resetShop);
+
+function screenshot() {
+  composer.render();
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'doener-shop.png';
+  a.click();
+  addLog('📸 Screenshot saved');
+}
+$('bShot').addEventListener('click', screenshot);
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+  else if (e.key === 'm' || e.key === 'M') toggleSound();
+  else if (e.key === 'r' || e.key === 'R') resetView();
+});
+
+/* auto-orbit: gentle time-based ping-pong inside the allowed azimuth window */
+let userHold = false, holdTimer = null, orbitDir = 1;
+const UP = V3(0, 1, 0);
+controls.addEventListener('start', () => {
+  userHold = true;
+  clearTimeout(holdTimer);
+  $('hint').classList.add('gone');
+});
+controls.addEventListener('end', () => {
+  holdTimer = setTimeout(() => userHold = false, 2500);
+});
+
+/* portrait screens get a wider lens and a higher, closer vantage on the shop */
+let portrait = null;
+function frameForViewport() {
+  const aspect = window.innerWidth / window.innerHeight;
+  const p = aspect < 0.9;
+  camera.fov = p ? 70 : 45;
+  camera.aspect = aspect;
+  if (p !== portrait) {
+    portrait = p;
+    const h = currentHome();
+    camera.position.copy(h.pos);
+    controls.target.copy(h.tgt);
+  }
+  camera.updateProjectionMatrix();
+}
+frameForViewport();
+
+window.addEventListener('resize', () => {
+  frameForViewport();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ============================== main loop ============================== */
+const clock = new THREE.Clock();
+let realT = 0, animT = 0, spawnTimer = 4, statsAcc = 0, neonDip = 1, neonTimer = 0;
+let firstFrame = false;
+
+function loop() {
+  const dt = clamp(clock.getDelta(), 0, 0.05);
+  realT += dt;
+  const simDt = CFG.paused ? 0 : dt * CFG.speed;
+  animT += simDt;
+  simMinutes += simDt;
+
+  /* camera */
+  if (camTween) {
+    camTween.t += dt;
+    const k = clamp(camTween.t / camTween.dur, 0, 1);
+    const e = 1 - Math.pow(1 - k, 3);
+    camera.position.lerpVectors(camTween.fromP, camTween.toP, e);
+    controls.target.lerpVectors(camTween.fromT, camTween.toT, e);
+    if (k >= 1) { camTween = null; controls.enabled = true; }
+  }
+  if (CFG.autoOrbit && !userHold && !camTween) {
+    const az = controls.getAzimuthalAngle();
+    if (az >= controls.maxAzimuthAngle - 0.08) orbitDir = -1;
+    if (az <= controls.minAzimuthAngle + 0.08) orbitDir = 1;
+    const off = camera.position.clone().sub(controls.target);
+    off.applyAxisAngle(UP, orbitDir * 0.035 * dt);
+    camera.position.copy(controls.target).add(off);
+  }
+  controls.update();
+
+  /* spawning */
+  if (simDt > 0) {
+    if (rushLeft > 0) {
+      rushTimer -= simDt;
+      if (rushTimer <= 0) { spawnCustomer(); rushLeft--; rushTimer = 0.7; }
+    } else if (CFG.crowd > 0) {
+      spawnTimer -= simDt;
+      if (spawnTimer <= 0) { spawnCustomer(); spawnTimer = rand(4.5, 9) / CFG.crowd; }
+    }
+  }
+
+  /* simulation */
+  updateClerk(simDt, animT);
+  for (const c of [...customers]) updateCustomer(c, simDt, animT);
+  animatePerson(clerk.person, simDt, animT, 'clerk');
+  for (const c of customers) {
+    const role = c.state === 'eat' ? 'eat' : (c.person.food ? 'carry' : 'idle');
+    animatePerson(c.person, simDt, animT, role);
+  }
+
+  /* flyers (food + coins) */
+  for (let i = flyers.length - 1; i >= 0; i--) {
+    const f = flyers[i];
+    f.t += simDt;
+    const k = clamp(f.t / f.dur, 0, 1);
+    f.mesh.position.lerpVectors(f.from, f.to, k);
+    f.mesh.position.y += Math.sin(k * Math.PI) * 0.45;
+    f.mesh.rotation.y += simDt * 4;
+    if (k >= 1) { flyers.splice(i, 1); f.onDone(); }
+  }
+
+  /* skewer + meat */
+  meat.rotation.y += simDt * CFG.skewer * 0.9;
+  onion.rotation.y = meat.rotation.y;
+  meatPop = Math.max(0, meatPop - simDt * 1.6);
+  const pop = 1 + Math.sin(meatPop * Math.PI) * 0.15;
+  const sxz = (0.45 + 0.55 * meatLevel) * pop;
+  meat.scale.set(sxz, (0.85 + 0.15 * meatLevel) * pop, sxz);
+
+  /* heater flicker */
+  const flick = (Math.sin(realT * 23) + Math.sin(realT * 13.7) + Math.sin(realT * 7.3)) / 3;
+  rodMat.emissiveIntensity = CFG.heat * (1.6 + 0.45 * flick);
+  flameMat.emissiveIntensity = CFG.heat * (1.8 + 0.9 * flick);
+  flames.forEach((f, i) => f.scale.y = CFG.heat > 0.02 ? 1 + 0.3 * Math.sin(realT * 30 + i * 2) : 0.001);
+  grillLight.intensity = CFG.heat * (4 + 1.2 * flick);
+  meatMat.emissiveIntensity = 0.05 + 0.12 * CFG.heat;
+  oilMat.emissiveIntensity = 0.25 + 0.15 * Math.sin(realT * 5);
+  Audio.heat(CFG.paused ? 0 : CFG.heat);
+
+  /* steam */
+  steamAcc += simDt * CFG.steam * CFG.heat * 9;
+  while (steamAcc >= 1) {
+    steamAcc -= 1;
+    const a = rand(0, Math.PI * 2), r = 0.3 * sxz;
+    spawnSteam(-3.2 + Math.cos(a) * r, rand(1.35, 2.3), -4.22 + Math.sin(a) * r, rand(0.8, 1.4));
+  }
+  for (const p of steamPool) {
+    if (!p.active) continue;
+    p.life += simDt;
+    if (p.life >= p.max) { p.active = false; p.s.visible = false; continue; }
+    const k = p.life / p.max;
+    p.s.position.addScaledVector(p.vel, simDt);
+    p.s.position.x += Math.sin(realT * 2 + p.max * 7) * 0.0015;
+    p.s.scale.setScalar(0.1 + k * 0.55);
+    p.s.material.opacity = Math.sin(k * Math.PI) * 0.32;
+  }
+  /* shavings */
+  for (const s of shavings) {
+    if (!s.active) continue;
+    s.life += simDt;
+    s.vel.y -= 3.5 * simDt;
+    s.m.position.addScaledVector(s.vel, simDt);
+    s.m.rotation.x += s.spin * simDt;
+    s.m.rotation.z += s.spin * 0.7 * simDt;
+    if (s.m.position.y < 1.2 || s.life > 2) { s.active = false; s.m.visible = false; }
+  }
+  /* fat drips */
+  dripAcc += simDt * CFG.heat * 0.8;
+  while (dripAcc >= 1) {
+    dripAcc -= 1;
+    const d = drips.find(q => !q.active);
+    if (d) { d.active = true; d.m.visible = true; d.m.position.set(-3.2 + rand(-0.1, 0.1), 1.26, -4.16); }
+  }
+  for (const d of drips) {
+    if (!d.active) continue;
+    d.m.position.y -= simDt * 0.5;
+    if (d.m.position.y < 1.19) { d.active = false; d.m.visible = false; }
+  }
+  /* dust */
+  const pos = dustGeo.attributes.position;
+  for (let i = 0; i < dustN; i++) {
+    const b = dustBase[i];
+    pos.setXYZ(i, b.x + Math.sin(realT * 0.11 + b.ph) * 0.12, b.y + Math.sin(realT * 0.25 + b.ph) * 0.15, b.z);
+  }
+  pos.needsUpdate = true;
+
+  /* door + fridge door */
+  const doorBusy = customers.some(c => Math.hypot(c.person.root.position.x + 6, c.person.root.position.z - 3.3) < 1.5);
+  doorTarget = doorBusy ? -1.05 : 0;
+  door.rotation.y = lerp(door.rotation.y, doorTarget, Math.min(1, simDt * 3.5));
+  fridgeDoor.rotation.y = lerp(fridgeDoor.rotation.y, fridgeDoorTarget, Math.min(1, simDt * 4));
+
+  /* wall clock */
+  hourHand.rotation.z = -((simMinutes / 60) % 12) / 12 * Math.PI * 2;
+  minHand.rotation.z = -(simMinutes % 60) / 60 * Math.PI * 2;
+
+  /* neon flicker */
+  neonTimer -= dt;
+  if (neonTimer <= 0) {
+    neonTimer = rand(0.05, 0.4);
+    neonDip = Math.random() < 0.06 ? rand(0.35, 0.7) : 1;
+  }
+  neonMat.color.setScalar(todCur.neon * neonDip);
+  neonLight.intensity = todCur.neonL * neonDip;
+  ledMat.emissiveIntensity = 1.2 + 0.3 * Math.sin(realT * 2);
+
+  updateTod(dt);
+  bloom.strength = CFG.glow;
+
+  /* stats */
+  statsAcc += dt;
+  if (statsAcc > 0.25) {
+    statsAcc = 0;
+    $('sServed').textContent = served;
+    $('sGuests').textContent = customers.length;
+    $('sMeat').textContent = Math.round(meatLevel * 100) + '%';
+    $('sTime').textContent = fmtTime(simMinutes);
+  }
+
+  composer.render();
+  if (!firstFrame) {
+    firstFrame = true;
+    window.__shopReady = true;
+    setTimeout(() => $('loading').classList.add('gone'), 350);
+    setTimeout(() => $('hint').classList.add('gone'), 10000);
+  }
+}
+renderer.setAnimationLoop(loop);
+
+/* ============================== boot ============================== */
+spawnCustomer(0);
+spawnCustomer();
+addLog('👋 Willkommen! The grill is hot, the door is open.');
+addLog('🔥 <b>Mehmet</b> fires up the rotisserie');
+window.__shop = {
+  CFG, scene, camera, controls, customers, clerk,
+  get stats() { return { served, guests: customers.length, meatLevel, simMinutes, queue: queue.length, clerk: clerk.state }; },
+};
+</script>
+</body>
+</html>
