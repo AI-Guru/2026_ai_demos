@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SECTOR 07 — Sublevel Maintenance Bay</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2305070a'/%3E%3Ccircle cx='8' cy='8' r='5' fill='none' stroke='%237fd4ff' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%23ff5340'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="scene"></canvas>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="hidden">
+    <div id="crosshair">
+      <div class="ch-line ch-top"></div>
+      <div class="ch-line ch-bottom"></div>
+      <div class="ch-line ch-left"></div>
+      <div class="ch-line ch-right"></div>
+      <div class="ch-dot"></div>
+    </div>
+    <div id="hitmarker">
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+    <div id="hud-bottom-left">
+      <div id="health-label">INTEGRITY</div>
+      <div id="health-bar"><div id="health-fill"></div></div>
+      <div id="health-num">100</div>
+    </div>
+
+    <div id="hud-bottom-right">
+      <div id="weapon-name">MK-7 CARBINE</div>
+      <div id="ammo-row">
+        <span id="ammo-mag">30</span><span id="ammo-sep">/</span><span id="ammo-res">270</span>
+      </div>
+      <div id="reload-hint" class="hidden">RELOADING</div>
+    </div>
+
+    <div id="hud-top-right">
+      <div id="wave-label">WAVE <span id="wave-num">1</span></div>
+      <div id="score-label">SCORE <span id="score-num">0</span></div>
+      <div id="kills-label">KILLS <span id="kills-num">0</span></div>
+    </div>
+
+    <button id="mute-btn" title="Toggle audio (M)">AUDIO ON</button>
+    <button id="pause-btn" class="hidden" title="Pause">❚❚</button>
+
+    <div id="center-msg"></div>
+    <div id="damage-vignette"></div>
+    <div id="low-health-vignette"></div>
+  </div>
+
+  <!-- ============ TOUCH CONTROLS ============ -->
+  <div id="touch-ui" class="hidden">
+    <div id="stick-zone">
+      <div id="stick-base"><div id="stick-knob"></div></div>
+    </div>
+    <div id="touch-buttons">
+      <button id="t-ads" class="t-btn">AIM</button>
+      <button id="t-sprint" class="t-btn">RUN</button>
+      <button id="t-jump" class="t-btn">JUMP</button>
+      <button id="t-reload" class="t-btn">RLD</button>
+      <button id="t-fire" class="t-btn big">FIRE</button>
+    </div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="menu">
+    <div id="menu-inner">
+      <div id="menu-eyebrow">BLACKSITE DEFENSE PROTOCOL</div>
+      <h1 id="menu-title">SECTOR&nbsp;07</h1>
+      <div id="menu-sub">SUBLEVEL MAINTENANCE BAY</div>
+      <p id="menu-brief">
+        Automated sentinels have breached the sublevel. Hold the bay until
+        reinforcement cycles complete. Expect escalating waves.
+      </p>
+      <div id="menu-controls">
+        <div><b>W A S D</b><span>move</span></div>
+        <div><b>MOUSE</b><span>look</span></div>
+        <div><b>LMB</b><span>fire</span></div>
+        <div><b>RMB</b><span>aim</span></div>
+        <div><b>SHIFT</b><span>sprint</span></div>
+        <div><b>SPACE</b><span>jump</span></div>
+        <div><b>R</b><span>reload</span></div>
+        <div><b>ESC</b><span>pause</span></div>
+      </div>
+      <div id="menu-touch-hint">LEFT THUMB · MOVE&ensp;&ensp;RIGHT DRAG · LOOK&ensp;&ensp;BUTTONS · FIRE / AIM / JUMP</div>
+      <div id="difficulty-row">
+        <span>THREAT LEVEL</span>
+        <button class="diff-btn active" data-diff="normal">NORMAL</button>
+        <button class="diff-btn" data-diff="veteran">VETERAN</button>
+      </div>
+      <button id="deploy-btn">CLICK TO DEPLOY</button>
+      <div id="menu-foot">WEBGL2 · PATH-GRADED RENDER PIPELINE · HEADPHONES RECOMMENDED</div>
+      <div id="menu-credit">BUILT WITH <a href="prompt.md">QWEN4-MAX-PREVIEW</a> · NOV 12 2026 · <a href="../">ALL DEMOS</a></div>
+    </div>
+    <div id="menu-loading">COMPILING SHADERS…</div>
+  </div>
+
+  <!-- ============ PAUSE ============ -->
+  <div id="pause" class="hidden">
+    <div class="overlay-inner">
+      <h2>STANDBY</h2>
+      <p>Simulation suspended.</p>
+      <button id="resume-btn">CLICK TO RESUME</button>
+    </div>
+  </div>
+
+  <!-- ============ DEATH ============ -->
+  <div id="death" class="hidden">
+    <div class="overlay-inner">
+      <h2>SIGNAL LOST</h2>
+      <div id="death-stats"></div>
+      <button id="restart-btn">CLICK TO REDEPLOY</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

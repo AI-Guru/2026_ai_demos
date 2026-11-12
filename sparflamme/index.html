@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="blech">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c0f13">
+<meta name="description" content="Sparflamme — eine dystopische Novelle aus dem Jahr 2040. Web-Leseausgabe mit Kontingent-Anzeige, drei Themen und Lesezeichen. Erstellt mit Qwen4-Max-Preview.">
+<title>Sparflamme — Eine Novelle aus dem Jahr 2040</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230c0f13'/%3E%3Cpath d='M16 5c1.2 4.8 6 7.2 6 12.4A6 6 0 0 1 16 23a6 6 0 0 1-6-5.6C10 12.2 14.8 9.8 16 5z' fill='%23e8a33d'/%3E%3Cpath d='M16 12c.7 2.6 3 3.9 3 6.6a3 3 0 0 1-6 0c0-2.7 2.3-4 3-6.6z' fill='%23ffd98f'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="reader.css">
+</head>
+<body>
+
+<div id="glow" aria-hidden="true"><i class="g g1"></i><i class="g g2"></i></div>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- ================= COVER ================= -->
+<section id="cover" class="screen">
+  <header class="classline">
+    <span class="ampel-mini" aria-hidden="true"><i></i></span>
+    <span>AMT FÜR VERBRAUCHSWAHRHEIT · DRUCKSACHE 2040/07</span>
+    <span class="classline-right">GENÜGSAMKEITSJAHR 15</span>
+  </header>
+
+  <div class="cover-body">
+    <div class="flame-wrap rise" aria-hidden="true">
+      <div class="flame-glow"></div>
+      <div class="flame">
+        <svg viewBox="0 0 60 90" aria-hidden="true">
+          <defs>
+            <linearGradient id="fgO1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb15e"/><stop offset="1" stop-color="#e8452c"/></linearGradient>
+            <linearGradient id="fgM1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd98f"/><stop offset="1" stop-color="#ff9a3d"/></linearGradient>
+            <linearGradient id="fgC1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6dd"/><stop offset="1" stop-color="#ffd07d"/></linearGradient>
+            <radialGradient id="fgB1"><stop offset="0" stop-color="#9fdcff"/><stop offset="1" stop-color="#3f7fc4" stop-opacity="0"/></radialGradient>
+          </defs>
+          <path fill="url(#fgO1)" d="M30 2 C34 14 47 26 47 48 C47 66 39 80 30 82 C21 80 13 66 13 48 C13 30 24 20 26 8 C27.5 13 29 10 30 2 Z"/>
+          <path class="l-mid" fill="url(#fgM1)" transform="translate(30 82) scale(.66) translate(-30 -82)" d="M30 2 C34 14 47 26 47 48 C47 66 39 80 30 82 C21 80 13 66 13 48 C13 30 24 20 26 8 C27.5 13 29 10 30 2 Z"/>
+          <path class="l-core" fill="url(#fgC1)" transform="translate(30 82) scale(.38) translate(-30 -82)" d="M30 2 C34 14 47 26 47 48 C47 66 39 80 30 82 C21 80 13 66 13 48 C13 30 24 20 26 8 C27.5 13 29 10 30 2 Z"/>
+          <ellipse class="l-blue" cx="30" cy="80" rx="11" ry="5.5" fill="url(#fgB1)"/>
+        </svg>
+      </div>
+      <div class="burner"></div>
+      <span class="ember e1"></span><span class="ember e2"></span><span class="ember e3"></span>
+    </div>
+
+    <p class="cover-kicker rise d1">EINE NOVELLE AUS DEM JAHR 2040</p>
+    <h1 class="cover-title rise d2">Sparflamme</h1>
+    <p class="cover-meta rise d3" id="cover-meta">Leipzig · Winter 2040 · 12 Kapitel + Koda</p>
+
+    <p class="cover-premise rise d4">
+      Während die Welt in KI-gestützter Fülle lebt, hat sich Deutschland in ein Regime
+      der erzwungenen Genügsamkeit eingeschlossen. Johanna Falk, Energieprüferin,
+      glaubt daran — bis sie im Kesselhaus der Baumwollspinnerei einen verbotenen
+      Garten entdeckt.
+    </p>
+
+    <div class="cover-actions rise d5">
+      <button id="btn-start" class="btn primary">Lesen beginnen</button>
+      <button id="btn-toc-cover" class="btn">Inhaltsverzeichnis</button>
+    </div>
+    <button id="btn-about-cover" class="linklike rise d6">Über diese Ausgabe</button>
+  </div>
+
+  <svg class="cover-seal" viewBox="0 0 220 220" aria-hidden="true">
+    <defs>
+      <path id="seal-arc" d="M110 110 m -78 0 a 78 78 0 1 1 156 0 a 78 78 0 1 1 -156 0"/>
+    </defs>
+    <g fill="none" stroke="currentColor">
+      <circle cx="110" cy="110" r="97" stroke-width="3"/>
+      <circle cx="110" cy="110" r="89" stroke-width="1"/>
+      <circle cx="110" cy="110" r="56" stroke-width="1.5"/>
+    </g>
+    <text font-size="11" letter-spacing="2.2" fill="currentColor" font-family="IBM Plex Mono, monospace">
+      <textPath href="#seal-arc">AMT FÜR VERBRAUCHSWAHRHEIT · ENERGIEPRÜFERIN · LEIPZIG ·</textPath>
+    </text>
+    <text x="110" y="105" text-anchor="middle" font-size="21" font-weight="600" letter-spacing="1" fill="currentColor" font-family="IBM Plex Mono, monospace">J. FALK</text>
+    <text x="110" y="124" text-anchor="middle" font-size="8.5" letter-spacing="2.4" fill="currentColor" font-family="IBM Plex Mono, monospace">DIENSTSIEGEL</text>
+    <text x="110" y="139" text-anchor="middle" font-size="8" letter-spacing="1.5" fill="currentColor" font-family="IBM Plex Mono, monospace">2040</text>
+  </svg>
+
+  <footer class="cover-foot">
+    <span>Erstellt mit <b>Qwen4-Max-Preview</b> · 12. November 2026</span>
+    <span class="foot-links"><a href="prompt.md">Prompt</a> · <a href="../">Alle Demos</a></span>
+  </footer>
+</section>
+
+<!-- ================= READER ================= -->
+<section id="reader" class="screen hidden">
+  <header id="topbar">
+    <button id="btn-toc" class="icon-btn" aria-label="Inhaltsverzeichnis öffnen" title="Inhaltsverzeichnis">
+      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" fill="none"/></svg>
+    </button>
+    <div class="top-title">
+      <span class="wordmark">SPARFLAMME</span>
+      <span id="top-chapter">K 01 · Die Wattzahl</span>
+    </div>
+    <div class="top-actions">
+      <button id="btn-bookmark" class="icon-btn" aria-label="Lesezeichen setzen" title="Lesezeichen setzen">
+        <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><path class="bm-path" d="M5.5 3.5h9a.5.5 0 0 1 .5.5v13l-5-3.2-5 3.2V4a.5.5 0 0 1 .5-.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+      <button id="btn-settings" class="icon-btn aa" aria-label="Satzspiegel öffnen" title="Satzspiegel">Aa</button>
+      <button id="btn-about" class="icon-btn" aria-label="Über diese Ausgabe" title="Über diese Ausgabe">
+        <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true"><circle cx="10" cy="10" r="7.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="6.4" r="1" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <div id="readprogress" aria-hidden="true"><i></i></div>
+  </header>
+
+  <main id="page">
+    <article id="content" aria-live="polite"></article>
+    <nav id="chapnav" aria-label="Kapitelnavigation">
+      <button id="btn-prev" class="chap-btn"></button>
+      <button id="btn-next" class="chap-btn"></button>
+    </nav>
+    <footer id="reader-foot">
+      <span>Erstellt mit <b>Qwen4-Max-Preview</b> · 12. November 2026</span>
+      <span class="foot-links"><a href="prompt.md">Prompt</a> · <a href="../">Alle Demos</a></span>
+    </footer>
+  </main>
+</section>
+
+<!-- ================= DRAWERS ================= -->
+<div id="scrim" class="hidden"></div>
+
+<aside id="toc" class="drawer left" aria-label="Inhaltsverzeichnis" aria-hidden="true">
+  <header class="drawer-head">
+    <span>INHALTSVERZEICHNIS</span>
+    <button class="icon-btn drawer-close" aria-label="Schließen">
+      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+  <div class="drawer-scroll">
+    <div class="quota-card">
+      <div class="quota-top"><span id="quota-ampel" class="ampel-dot gelb" aria-hidden="true"></span> RESTKONTINGENT · LEKTÜRE</div>
+      <div class="quota-num"><b id="quota-kwh">290</b><span class="unit">kWh</span></div>
+      <div class="quota-bar"><i id="quota-fill"></i></div>
+      <div class="quota-sub" id="quota-sub">Lesefortschritt, gemeldet in Kilowattstunden.</div>
+    </div>
+    <ol id="toc-list"></ol>
+    <div id="bookmark-section">
+      <h3>LESEZEICHEN</h3>
+      <ul id="bookmark-list"></ul>
+      <p id="no-bookmarks">Noch keine Lesezeichen gesetzt.</p>
+    </div>
+  </div>
+</aside>
+
+<aside id="settings" class="drawer right" aria-label="Satzspiegel" aria-hidden="true">
+  <header class="drawer-head">
+    <span>SATZSPIEGEL</span>
+    <button class="icon-btn drawer-close" aria-label="Schließen">
+      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+  <div class="drawer-scroll">
+    <div class="setting">
+      <label>THEMA</label>
+      <div class="theme-row">
+        <button class="theme-btn" data-theme="blech"><span class="sw sw-blech"><i></i><i></i><i></i></span>Blech</button>
+        <button class="theme-btn" data-theme="papier"><span class="sw sw-papier"><i></i><i></i><i></i></span>Papier</button>
+        <button class="theme-btn" data-theme="garten"><span class="sw sw-garten"><i></i><i></i><i></i></span>Garten</button>
+      </div>
+    </div>
+    <div class="setting">
+      <label for="set-size">SCHRIFTGRÖSSE <output id="out-size">19 px</output></label>
+      <input type="range" id="set-size" min="16" max="24" step="1" value="19">
+    </div>
+    <div class="setting">
+      <label for="set-height">ZEILENABSTAND <output id="out-height">1.75</output></label>
+      <input type="range" id="set-height" min="1.5" max="2.1" step="0.05" value="1.75">
+    </div>
+    <div class="setting">
+      <label for="set-width">SPALTENBREITE <output id="out-width">66 ch</output></label>
+      <input type="range" id="set-width" min="46" max="80" step="1" value="66">
+    </div>
+    <div class="setting">
+      <label>SCHRIFTART</label>
+      <div class="seg-row" id="font-row">
+        <button class="seg-btn" data-font="serif">Serif · Newsreader</button>
+        <button class="seg-btn" data-font="sans">Sans · Archivo</button>
+      </div>
+    </div>
+    <button id="btn-reset-settings" class="btn ghost full">Zurücksetzen</button>
+    <p class="settings-note">Alle Einstellungen gelten sofort und bleiben auf diesem Gerät gespeichert.</p>
+  </div>
+</aside>
+
+<!-- ================= ABOUT ================= -->
+<div id="about" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="about-title">
+  <div class="modal-card">
+    <button class="icon-btn modal-close" aria-label="Schließen">
+      <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <p class="modal-kicker">AMT FÜR VERBRAUCHSWAHRHEIT · DRUCKSACHE 2040/07</p>
+    <h2 id="about-title">Über diese Ausgabe</h2>
+
+    <p><b>Sparflamme</b> ist eine deutschsprachige dystopische Novelle (~18.000 Wörter,
+    12 Kapitel + dokumentarische Koda). Leipzig, Winter 2040: Persönliche Energiekontingente,
+    rationierte Wärme, ein Rechenverbot — die Knappheit ist politisch erzeugt und zur Moral
+    erklärt worden. Energieprüferin Johanna Falk glaubt an das Regime, bis ein verbotener
+    Garten ihre Wörter nicht mehr gehorchen lässt.</p>
+
+    <p class="note"><b>Inhaltliche Einordnung:</b> Die Novelle ist eine kritische Dystopie.
+    Sie kritisiert das Regime, das sie schildert — sie ist Literatur, keine Empfehlung.
+    Das fiktive Regime ist eine satirische Verfälschung demokratischer Suffizienz-Ideen,
+    kein Prognoseanspruch.</p>
+
+    <h3>Herstellung</h3>
+    <p>Die Novelle entstand in einem koordinierten Mehr-Agenten-Prozess: vier Recherche-Agenten,
+    Weltbibel und Stilguide, Kapitel geschrieben von drei Agenten nach festen Kontinuitätsverträgen,
+    danach Revision und Zusammenführung. Das Dienstsiegel der Prüferin ist das Dingsymbol der
+    Novelle — seine Bedeutung kippt genau einmal, in Kapitel 8.</p>
+
+    <div class="credit-block">
+      <p class="credit-line">Diese Web-Leseausgabe wurde erstellt mit <b>Qwen4-Max-Preview</b> · 12. November 2026.</p>
+      <p class="credit-sub">Lesefortschritt, Satzspiegel und Lesezeichen werden lokal im Browser gespeichert (localStorage). Kein Tracking, keine Cookies, kein Server.</p>
+    </div>
+
+    <h3>Prompt</h3>
+    <pre class="prompt-block" id="prompt-text"></pre>
+    <p class="prompt-links"><a href="prompt.md">prompt.md öffnen</a> · <a href="https://github.com/AI-Guru/2026_ai_demos">Quellcode</a> · <a href="../">Alle Demos</a></p>
+  </div>
+</div>
+
+<div id="toast" class="hidden" role="status"></div>
+
+<script src="book.js"></script>
+<script src="reader.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "sector-07",
+  "version": "1.0.0",
+  "description": "SECTOR 07 — a tiny-level, high-fidelity browser FPS. Three.js, procedural PBR, GTAO + bloom + film grade, synthesized audio.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8123 --bind 127.0.0.1",
+    "test": "node test/smoke.mjs"
+  },
+  "keywords": ["fps", "threejs", "webgl", "game", "pbr"],
+  "license": "ISC",
+  "devDependencies": {
+    "puppeteer-core": "^25.17.0"
+  }
+}
