@@ -1,0 +1,20 @@
+{
+ "name": "tree_oak",
+ "sheet": "tree_oak.png",
+ "frameW": 96,
+ "frameH": 144,
+ "cols": 8,
+ "rows": 3,
+ "yawStep": 45.0,
+ "elevations": [
+  10,
+  35,
+  65
+ ],
+ "pxPerMeter": 7,
+ "anchorX": 48.0,
+ "anchorY": 72.0,
+ "worldH": 9.8,
+ "radius": 3.5,
+ "voxel": 0.35
+}

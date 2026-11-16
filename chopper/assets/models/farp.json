@@ -1,0 +1,20 @@
+{
+ "name": "farp",
+ "sheet": "farp.png",
+ "frameW": 192,
+ "frameH": 176,
+ "cols": 16,
+ "rows": 3,
+ "yawStep": 22.5,
+ "elevations": [
+  10,
+  35,
+  65
+ ],
+ "pxPerMeter": 5,
+ "anchorX": 96.0,
+ "anchorY": 88.0,
+ "worldH": 6.8,
+ "radius": 16.971,
+ "voxel": 0.4
+}

@@ -1,0 +1,20 @@
+{
+ "name": "tent",
+ "sheet": "tent.png",
+ "frameW": 96,
+ "frameH": 80,
+ "cols": 16,
+ "rows": 3,
+ "yawStep": 22.5,
+ "elevations": [
+  10,
+  35,
+  65
+ ],
+ "pxPerMeter": 7,
+ "anchorX": 48.0,
+ "anchorY": 40.0,
+ "worldH": 3.6,
+ "radius": 4.5,
+ "voxel": 0.3
+}

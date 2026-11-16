@@ -1,0 +1,20 @@
+{
+ "name": "bridge",
+ "sheet": "bridge.png",
+ "frameW": 224,
+ "frameH": 224,
+ "cols": 16,
+ "rows": 3,
+ "yawStep": 22.5,
+ "elevations": [
+  10,
+  35,
+  65
+ ],
+ "pxPerMeter": 5,
+ "anchorX": 112.0,
+ "anchorY": 112.0,
+ "worldH": 6.4,
+ "radius": 21.347,
+ "voxel": 0.4
+}

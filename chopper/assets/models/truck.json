@@ -1,0 +1,21 @@
+{
+ "name": "truck",
+ "sheet": "truck.png",
+ "frameW": 112,
+ "frameH": 112,
+ "cols": 32,
+ "rows": 4,
+ "yawStep": 11.25,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 10,
+ "anchorX": 56.0,
+ "anchorY": 56.0,
+ "worldH": 3.2,
+ "radius": 4.561,
+ "voxel": 0.2
+}

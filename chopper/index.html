@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#050805">
+  <title>TIGER — Operation Weißer Blitz</title>
+  <!-- Inline SVG favicon: black iron cross on phosphor green (offline-safe) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%238dff9e'/%3E%3Cpath fill='%23101410' d='M20 6 Q32 11 44 6 C40 14 38 20 36 28 C44 26 50 24 58 20 Q53 32 58 44 C50 40 44 38 36 36 C38 44 40 50 44 58 Q32 53 20 58 C24 50 26 44 28 36 C20 38 14 40 6 44 Q11 32 6 20 C14 24 20 26 28 28 C26 20 24 14 20 6 Z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-screen="loading">
+
+  <!-- Voxel engine render target (attract mode runs behind the menus) -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- CRT scanlines + damage vignette + explosion flash (opacity driven by ui.js) -->
+  <div id="crt"></div>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+
+  <!-- ============================ LOADING ============================ -->
+  <div id="screen-loading" class="screen">
+    <div class="load-col">
+      <div class="load-wordmark">TIGER</div>
+      <div id="load-bar"><div id="load-fill"></div></div>
+      <div id="load-label">INITIALIZING…</div>
+    </div>
+  </div>
+
+  <!-- ============================= TITLE ============================= -->
+  <div id="screen-title" class="screen hidden">
+    <div class="title-col">
+      <div class="flag-stripe" aria-hidden="true"><i></i><i></i><i></i></div>
+      <h1>TIGER</h1>
+      <div class="subtitle">OPERATION WEISSER BLITZ</div>
+      <div class="tagline">Heeresflieger-Kampfsimulation · Bundeswehr</div>
+      <nav class="title-nav" aria-label="Main menu">
+        <button id="btn-campaign" class="btn" type="button">START CAMPAIGN</button>
+        <button id="btn-training" class="btn" type="button">FREE FLIGHT</button>
+        <button id="btn-controls" class="btn" type="button">CONTROLS</button>
+        <button id="btn-sound" class="btn" type="button" aria-pressed="true">SOUND: ON</button>
+      </nav>
+      <div id="progress-stars" aria-label="Campaign progress"></div>
+    </div>
+    <footer class="credit">A tribute to Comanche: Operation White Lightning · NovaLogic 1992 · Voxel Space engine</footer>
+  </div>
+
+  <!-- ============================ BRIEFING =========================== -->
+  <div id="screen-briefing" class="screen hidden">
+    <div class="panel brief-panel">
+      <header class="brief-head">
+        <div id="brief-kicker" class="kicker">EINSATZBEFEHL · MISSION 1/4</div>
+        <h2 id="brief-title"></h2>
+      </header>
+      <div class="brief-grid">
+        <div class="brief-left">
+          <div class="map-frame"><img id="brief-map-img" alt="tactical map"></div>
+          <h3>OBJECTIVES</h3>
+          <ul id="brief-objectives"></ul>
+        </div>
+        <div class="brief-right">
+          <h3>INTEL</h3>
+          <div id="brief-intel"></div>
+          <h3>THREATS</h3>
+          <div id="brief-threats"></div>
+          <h3>LOADOUT</h3>
+          <div id="loadout-row" role="radiogroup" aria-label="Weapon loadout"></div>
+        </div>
+      </div>
+      <footer class="brief-foot">
+        <button id="btn-back" class="btn" type="button">BACK</button>
+        <button id="btn-launch" class="btn btn-primary" type="button">LAUNCH ▸</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ============================ DEBRIEF ============================ -->
+  <div id="screen-debrief" class="screen hidden">
+    <div class="panel debrief-panel">
+      <h2 id="debrief-title"></h2>
+      <div id="debrief-sub"></div>
+      <table id="debrief-stats"><tbody></tbody></table>
+      <div id="debrief-rating" class="stamp"></div>
+      <div id="debrief-comment"></div>
+      <div class="debrief-buttons">
+        <button id="btn-next" class="btn btn-primary" type="button">NEXT MISSION ▸</button>
+        <button id="btn-retry" class="btn" type="button">RETRY</button>
+        <button id="btn-menu" class="btn" type="button">COMMAND MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= PAUSE ============================= -->
+  <div id="screen-pause" class="screen hidden">
+    <div class="panel pause-panel">
+      <h2>PAUSED</h2>
+      <div class="pause-buttons">
+        <button id="btn-resume" class="btn" type="button">RESUME</button>
+        <button id="btn-restart" class="btn" type="button">RESTART MISSION</button>
+        <button id="btn-quit" class="btn btn-danger" type="button">ABORT TO MENU</button>
+      </div>
+      <div class="vol-block">
+        <div class="vol-row">
+          <label for="vol-master">MASTER</label>
+          <input type="range" id="vol-master" min="0" max="100" value="80">
+          <span class="vol-val" id="vol-master-val">80</span>
+        </div>
+        <div class="vol-row">
+          <label for="vol-sfx">SFX</label>
+          <input type="range" id="vol-sfx" min="0" max="100" value="90">
+          <span class="vol-val" id="vol-sfx-val">90</span>
+        </div>
+        <div class="vol-row">
+          <label for="vol-music">MUSIC</label>
+          <input type="range" id="vol-music" min="0" max="100" value="60">
+          <span class="vol-val" id="vol-music-val">60</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ CONTROLS =========================== -->
+  <div id="screen-controls" class="screen hidden">
+    <div class="panel controls-panel">
+      <h2>STEUERUNG · CONTROLS</h2>
+      <table class="controls-table">
+        <tbody>
+          <tr class="group"><th colspan="2">FLIGHT</th></tr>
+          <tr><td class="keys"><kbd>W</kbd>/<kbd>S</kbd> or <kbd>↑</kbd>/<kbd>↓</kbd></td><td>Cyclic fore/aft (speed)</td></tr>
+          <tr><td class="keys"><kbd>A</kbd>/<kbd>D</kbd> or <kbd>←</kbd>/<kbd>→</kbd></td><td>Bank &amp; turn</td></tr>
+          <tr><td class="keys"><kbd>Q</kbd>/<kbd>E</kbd></td><td>Pedal yaw</td></tr>
+          <tr><td class="keys"><kbd>SHIFT</kbd>/<kbd>C</kbd></td><td>Collective up/down</td></tr>
+          <tr class="group"><th colspan="2">WEAPONS</th></tr>
+          <tr><td class="keys"><kbd>SPACE</kbd></td><td>Fire selected weapon</td></tr>
+          <tr><td class="keys"><kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd></td><td>Cannon / Rockets / PARS 3 LR</td></tr>
+          <tr><td class="keys"><kbd>F</kbd></td><td>Flares</td></tr>
+          <tr class="group"><th colspan="2">SYSTEMS</th></tr>
+          <tr><td class="keys"><kbd>V</kbd></td><td>Chase/cockpit view</td></tr>
+          <tr><td class="keys"><kbd>M</kbd></td><td>Tactical map (pauses)</td></tr>
+          <tr><td class="keys"><kbd>ENTER</kbd></td><td>End mission early when objectives complete</td></tr>
+          <tr><td class="keys"><kbd>ESC</kbd></td><td>Pause</td></tr>
+          <tr><td class="keys"><kbd>N</kbd></td><td>Mute</td></tr>
+        </tbody>
+      </table>
+      <div class="controls-foot">
+        <button id="btn-controls-back" class="btn" type="button">BACK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== MAP ============================== -->
+  <div id="screen-map" class="screen hidden">
+    <div class="map-wrap">
+      <div id="map-title" class="kicker">TAKTISCHE KARTE</div>
+      <canvas id="map-canvas" width="512" height="512"></canvas>
+      <div id="map-legend">
+        <span class="lg-you">▲ YOU</span>
+        <span class="lg-primary">◆ PRIMARY OBJECTIVE</span>
+        <span class="lg-secondary">● SECONDARY</span>
+        <span class="lg-farp">H FARP</span>
+        <span class="lg-village">✚ VILLAGE</span>
+      </div>
+      <button id="btn-map-close" class="btn" type="button">CLOSE (M)</button>
+    </div>
+  </div>
+
+  <!-- ==================== IN-FLIGHT DOM (not screens) ================= -->
+  <div id="mission-card" class="hidden" aria-hidden="true">
+    <div id="mc-kicker"></div>
+    <div id="mc-title"></div>
+    <div id="mc-sub"></div>
+  </div>
+
+  <div id="radio-box" class="hidden">
+    <span id="radio-sender"></span><span id="radio-text"></span>
+  </div>
+
+  <div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <div class="noscript">TIGER requires JavaScript — please enable it to run the simulation.</div>
+  </noscript>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

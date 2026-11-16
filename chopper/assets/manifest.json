@@ -1,0 +1,58 @@
+{
+ "terrain": [
+  {
+   "id": 1,
+   "name": "L\u00fcneburger Heide",
+   "height": "terrain/m1_height.bin",
+   "color": "terrain/m1_color.bin",
+   "map": "terrain/m1_map.png",
+   "meta": "terrain/m1_meta.json"
+  },
+  {
+   "id": 2,
+   "name": "Bayerischer Wald",
+   "height": "terrain/m2_height.bin",
+   "color": "terrain/m2_color.bin",
+   "map": "terrain/m2_map.png",
+   "meta": "terrain/m2_meta.json"
+  },
+  {
+   "id": 3,
+   "name": "Schw\u00e4bische Alb",
+   "height": "terrain/m3_height.bin",
+   "color": "terrain/m3_color.bin",
+   "map": "terrain/m3_map.png",
+   "meta": "terrain/m3_meta.json"
+  },
+  {
+   "id": 4,
+   "name": "Allg\u00e4u",
+   "height": "terrain/m4_height.bin",
+   "color": "terrain/m4_color.bin",
+   "map": "terrain/m4_map.png",
+   "meta": "terrain/m4_meta.json"
+  }
+ ],
+ "models": {
+  "tiger": "models/tiger.json",
+  "mi28": "models/mi28.json",
+  "tank": "models/tank.json",
+  "gepard": "models/gepard.json",
+  "osa": "models/osa.json",
+  "bmp": "models/bmp.json",
+  "truck": "models/truck.json",
+  "bunker": "models/bunker.json",
+  "fueldepot": "models/fueldepot.json",
+  "radar": "models/radar.json",
+  "church": "models/church.json",
+  "house": "models/house.json",
+  "watertower": "models/watertower.json",
+  "bridge": "models/bridge.json",
+  "tent": "models/tent.json",
+  "farp": "models/farp.json",
+  "tree_spruce": "models/tree_spruce.json",
+  "tree_oak": "models/tree_oak.json",
+  "bush": "models/bush.json",
+  "rock": "models/rock.json"
+ }
+}

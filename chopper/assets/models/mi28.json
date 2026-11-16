@@ -1,0 +1,34 @@
+{
+ "name": "mi28",
+ "sheet": "mi28.png",
+ "frameW": 128,
+ "frameH": 128,
+ "cols": 32,
+ "rows": 4,
+ "yawStep": 11.25,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 7.5,
+ "anchorX": 64.0,
+ "anchorY": 64.0,
+ "worldH": 4.2,
+ "radius": 8.002,
+ "voxel": 0.2,
+ "rotorHub": {
+  "x": 0.0,
+  "y": 3.8,
+  "z": 0.2,
+  "radius": 8.5
+ },
+ "tailRotor": {
+  "x": 0.5,
+  "y": 3.1,
+  "z": -6.8,
+  "radius": 0.7
+ },
+ "overallLength": 17.0
+}

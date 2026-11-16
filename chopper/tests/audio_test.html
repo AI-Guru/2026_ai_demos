@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TIGER — AudioEngine manual test</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    background: #0a0f0a; color: #9fe89f; font: 14px/1.5 "Courier New", monospace;
+    margin: 0; padding: 24px;
+  }
+  h1 { font-size: 18px; letter-spacing: 2px; color: #d8ffd8; text-transform: uppercase; }
+  .note { color: #e8c86a; border: 1px solid #5a4a1a; padding: 8px 12px; margin: 12px 0; }
+  fieldset { border: 1px solid #2a4a2a; margin: 12px 0; padding: 10px 14px; }
+  legend { color: #6fbf6f; padding: 0 6px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+  button {
+    background: #122412; color: #9fe89f; border: 1px solid #3a6a3a;
+    font: inherit; padding: 6px 12px; margin: 3px; cursor: pointer;
+  }
+  button:hover { background: #1c3a1c; }
+  button:active { background: #2a5a2a; }
+  label { display: inline-flex; align-items: center; gap: 6px; margin: 4px 12px 4px 0; }
+  input[type="range"] { width: 140px; accent-color: #4a9a4a; }
+  #status { color: #6fbf6f; margin-top: 16px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>TIGER // AudioEngine bench test</h1>
+<p class="note">Sound starts after the first click: press <b>UNLOCK</b> first (browser autoplay policy).
+Every button below calls exactly one public method of <code>AudioEngine</code>.</p>
+
+<fieldset><legend>Context &amp; mixer</legend>
+  <button id="unlock">Unlock</button>
+  <button id="dispose">Dispose</button>
+  <label>Master <input type="range" id="master" min="0" max="1" step="0.01" value="0.9"></label>
+  <label>SFX <input type="range" id="sfx" min="0" max="1" step="0.01" value="0.9"></label>
+  <label>Music <input type="range" id="music" min="0" max="1" step="0.01" value="0.65"></label>
+  <label><input type="checkbox" id="paused"> setPaused(true) — duck flight + warnings</label>
+</fieldset>
+
+<fieldset><legend>Flight bed</legend>
+  <button id="startFlight">startFlight()</button>
+  <button id="stopFlight">stopFlight()</button>
+  <label>Speed m/s <input type="range" id="speed" min="0" max="85" step="1" value="30"></label>
+  <label>Collective <input type="range" id="collective" min="0" max="1" step="0.01" value="0.5"></label>
+  <label>RPM <input type="range" id="rpm" min="300" max="360" step="1" value="330"></label>
+  <label>AGL m <input type="range" id="agl" min="0" max="300" step="1" value="100"></label>
+  <label><input type="checkbox" id="damaged"> damaged (sputter)</label>
+  <div>Sliders feed updateFlight() every animation frame while the bed runs.</div>
+</fieldset>
+
+<fieldset><legend>Weapons</legend>
+  <button id="gun">fireGun() — hold to fire</button>
+  <button id="rocket">fireRocket()</button>
+  <button id="missile">fireMissile()</button>
+  <button id="flare">flare()</button>
+</fieldset>
+
+<fieldset><legend>Impacts</legend>
+  <label>Distance m <input type="range" id="dist" min="0" max="2000" step="10" value="100"></label>
+  <label>Pan <input type="range" id="pan" min="-1" max="1" step="0.1" value="0"></label>
+  <button id="explosion">explosion(dist, pan)</button>
+  <button id="exp8">explosion ×10 (voice cap)</button>
+  <button id="hit">hit()</button>
+  <button id="crash">crash()</button>
+  <button id="landing">landing()</button>
+</fieldset>
+
+<fieldset><legend>Seeker lock</legend>
+  <button id="startLock">startLock()</button>
+  <button id="toggleLocked">setLocked(toggle)</button>
+  <button id="stopLock">stopLock()</button>
+</fieldset>
+
+<fieldset><legend>Warnings</legend>
+  <button id="wRadar">warning('radar')</button>
+  <button id="wMissile">warning('missile')</button>
+  <button id="wPullup">warning('pullup')</button>
+  <button id="wStop">stopWarning()</button>
+</fieldset>
+
+<fieldset><legend>Radio &amp; UI</legend>
+  <button id="radio">radioClick()</button>
+  <button id="click">uiClick()</button>
+  <button id="hover">uiHover()</button>
+</fieldset>
+
+<fieldset><legend>Title music</legend>
+  <button id="musicStart">startMusic('title')</button>
+  <button id="musicStop">stopMusic()</button>
+</fieldset>
+
+<div id="status">ctx: not created</div>
+
+<script type="module">
+import { AudioEngine } from '../js/engine/audio.js';
+const a = new AudioEngine();
+const $ = (id) => document.getElementById(id);
+const status = $('status');
+let locked = false;
+
+// --- context & mixer ---
+$('unlock').onclick = () => a.unlock();
+$('dispose').onclick = () => a.dispose();
+$('master').oninput = (e) => a.setMasterVolume(+e.target.value);
+$('sfx').oninput = (e) => a.setSfxVolume(+e.target.value);
+$('music').oninput = (e) => a.setMusicVolume(+e.target.value);
+$('paused').onchange = (e) => a.setPaused(e.target.checked);
+
+// --- flight bed: sliders drive updateFlight at ~60 Hz ---
+$('startFlight').onclick = () => a.startFlight();
+$('stopFlight').onclick = () => a.stopFlight();
+(function frame() {
+  a.updateFlight({
+    speed: +$('speed').value, collective: +$('collective').value,
+    rpm: +$('rpm').value, agl: +$('agl').value, damaged: $('damaged').checked,
+  });
+  status.textContent =
+    `ctx: ${a.ctx ? a.ctx.state : 'not created'} | flight: ${a.flight ? 'on' : 'off'}` +
+    ` | lock: ${a._lock ? (a._lock.locked ? 'LOCKED' : 'seeking') : 'off'}` +
+    ` | warning: ${a._warn ? a._warn.kind : 'off'} | music: ${a._music ? 'on' : 'off'}` +
+    ` | explosion voices: ${a._expVoices.length}`;
+  requestAnimationFrame(frame);
+})();
+
+// --- weapons (gun button supports hold-to-fire; engine rate-limits to ~70 ms) ---
+let gunTimer = null;
+const gunDown = () => { a.fireGun(); gunTimer = setInterval(() => a.fireGun(), 75); };
+const gunUp = () => { clearInterval(gunTimer); gunTimer = null; };
+$('gun').addEventListener('pointerdown', gunDown);
+addEventListener('pointerup', gunUp);
+$('gun').addEventListener('pointerleave', gunUp);
+$('rocket').onclick = () => a.fireRocket();
+$('missile').onclick = () => a.fireMissile();
+$('flare').onclick = () => a.flare();
+
+// --- impacts ---
+$('explosion').onclick = () => a.explosion(+$('dist').value, +$('pan').value);
+$('exp8').onclick = () => { for (let i = 0; i < 10; i++) a.explosion(50 + i * 80, (i % 5) / 2 - 1); };
+$('hit').onclick = () => a.hit();
+$('crash').onclick = () => a.crash();
+$('landing').onclick = () => a.landing();
+
+// --- lock ---
+$('startLock').onclick = () => a.startLock();
+$('toggleLocked').onclick = () => { locked = !locked; a.setLocked(locked); };
+$('stopLock').onclick = () => { locked = false; a.stopLock(); };
+
+// --- warnings ---
+$('wRadar').onclick = () => a.warning('radar');
+$('wMissile').onclick = () => a.warning('missile');
+$('wPullup').onclick = () => a.warning('pullup');
+$('wStop').onclick = () => a.stopWarning();
+
+// --- radio & UI ---
+$('radio').onclick = () => a.radioClick();
+$('click').onclick = () => a.uiClick();
+$('hover').onclick = () => a.uiHover();
+
+// --- music ---
+$('musicStart').onclick = () => a.startMusic('title');
+$('musicStop').onclick = () => a.stopMusic();
+</script>
+</body>
+</html>

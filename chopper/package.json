@@ -1,0 +1,7 @@
+{
+  "name": "chopper-tiger",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TIGER — Operation Weißer Blitz: a Comanche-style voxel helicopter combat sim"
+}

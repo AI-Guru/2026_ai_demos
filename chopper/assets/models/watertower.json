@@ -1,0 +1,21 @@
+{
+ "name": "watertower",
+ "sheet": "watertower.png",
+ "frameW": 96,
+ "frameH": 176,
+ "cols": 16,
+ "rows": 4,
+ "yawStep": 22.5,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 6,
+ "anchorX": 48.0,
+ "anchorY": 88.0,
+ "worldH": 13.3,
+ "radius": 2.666,
+ "voxel": 0.35
+}

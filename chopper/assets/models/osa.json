@@ -1,0 +1,21 @@
+{
+ "name": "osa",
+ "sheet": "osa.png",
+ "frameW": 128,
+ "frameH": 128,
+ "cols": 32,
+ "rows": 4,
+ "yawStep": 11.25,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 9,
+ "anchorX": 64.0,
+ "anchorY": 64.0,
+ "worldH": 4.25,
+ "radius": 4.67,
+ "voxel": 0.25
+}

@@ -1,0 +1,19 @@
+{
+ "name": "bush",
+ "sheet": "bush.png",
+ "frameW": 64,
+ "frameH": 48,
+ "cols": 8,
+ "rows": 2,
+ "yawStep": 45.0,
+ "elevations": [
+  15,
+  50
+ ],
+ "pxPerMeter": 7,
+ "anchorX": 32.0,
+ "anchorY": 24.0,
+ "worldH": 1.8,
+ "radius": 1.082,
+ "voxel": 0.3
+}

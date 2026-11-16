@@ -1,0 +1,21 @@
+{
+ "name": "church",
+ "sheet": "church.png",
+ "frameW": 128,
+ "frameH": 224,
+ "cols": 16,
+ "rows": 4,
+ "yawStep": 22.5,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 6,
+ "anchorX": 64.0,
+ "anchorY": 112.0,
+ "worldH": 17.5,
+ "radius": 5.534,
+ "voxel": 0.35
+}

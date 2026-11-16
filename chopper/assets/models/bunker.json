@@ -1,0 +1,21 @@
+{
+ "name": "bunker",
+ "sheet": "bunker.png",
+ "frameW": 160,
+ "frameH": 128,
+ "cols": 16,
+ "rows": 4,
+ "yawStep": 22.5,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 5,
+ "anchorX": 80.0,
+ "anchorY": 64.0,
+ "worldH": 7.2,
+ "radius": 9.13,
+ "voxel": 0.4
+}

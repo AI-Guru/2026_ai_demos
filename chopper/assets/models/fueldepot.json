@@ -1,0 +1,21 @@
+{
+ "name": "fueldepot",
+ "sheet": "fueldepot.png",
+ "frameW": 192,
+ "frameH": 144,
+ "cols": 16,
+ "rows": 4,
+ "yawStep": 22.5,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 5,
+ "anchorX": 96.0,
+ "anchorY": 72.0,
+ "worldH": 3.2,
+ "radius": 11.662,
+ "voxel": 0.4
+}

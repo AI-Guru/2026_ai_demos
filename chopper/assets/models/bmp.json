@@ -1,0 +1,21 @@
+{
+ "name": "bmp",
+ "sheet": "bmp.png",
+ "frameW": 112,
+ "frameH": 112,
+ "cols": 32,
+ "rows": 4,
+ "yawStep": 11.25,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 10,
+ "anchorX": 56.0,
+ "anchorY": 56.0,
+ "worldH": 2.4,
+ "radius": 3.677,
+ "voxel": 0.2
+}

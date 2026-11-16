@@ -1,0 +1,21 @@
+{
+ "name": "radar",
+ "sheet": "radar.png",
+ "frameW": 128,
+ "frameH": 160,
+ "cols": 16,
+ "rows": 4,
+ "yawStep": 22.5,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 6,
+ "anchorX": 64.0,
+ "anchorY": 80.0,
+ "worldH": 12.6,
+ "radius": 2.99,
+ "voxel": 0.35
+}

@@ -1,0 +1,21 @@
+{
+ "name": "tank",
+ "sheet": "tank.png",
+ "frameW": 128,
+ "frameH": 128,
+ "cols": 32,
+ "rows": 4,
+ "yawStep": 11.25,
+ "elevations": [
+  5,
+  20,
+  40,
+  65
+ ],
+ "pxPerMeter": 10,
+ "anchorX": 64.0,
+ "anchorY": 64.0,
+ "worldH": 3.0,
+ "radius": 5.337,
+ "voxel": 0.2
+}
